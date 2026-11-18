@@ -4,7 +4,7 @@ const root = '/magic-english-buddy/';
 async function startSharedSession(page: import('@playwright/test').Page) {
   await page.goto(root);
   await page.getByRole('button', { name: '直接开始，一起学英语' }).click();
-  await expect(page.getByRole('heading', { name: '一起学英语', exact: true })).toBeVisible();
+  await expect(page.getByTestId('map-page')).toBeVisible();
 }
 
 test('shared phone: read, look up, practice, and persist progress', async ({ page }) => {

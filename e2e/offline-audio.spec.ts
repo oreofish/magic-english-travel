@@ -95,7 +95,7 @@ test('all audio is opt-in, survives offline reload, and can be removed without d
   await expect.poll(() => savedFiles(page)).toEqual([]);
   await expect(page.getByText('未下载', { exact: true })).toHaveCount(8);
   await page.getByRole('link', { name: '魔法地图', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '一起学英语', exact: true })).toBeVisible();
+  await expect(page.getByTestId('map-page')).toBeVisible();
   await context.setOffline(false);
 });
 

@@ -104,7 +104,7 @@ test('exports a learning backup, previews it on a fresh device, and restores car
     expect((await rows(fresh, 'userProgress'))[0].magicPower).toBe(19);
     expect((await rows(fresh, 'userVocabulary')).length).toBeGreaterThan(0);
     await fresh.reload();
-    await expect(fresh.getByRole('heading', { name: '一起学英语', exact: true })).toBeVisible();
+    await expect(fresh.getByTestId('map-page')).toBeVisible();
     await fresh.screenshot({ path: testInfo.outputPath('restored-map.png'), fullPage: false });
   } finally {
     await context.close();
@@ -212,7 +212,7 @@ test('a stale lazy settings chunk reloads once and keeps the local profile', asy
     });
     await page.goto(new URL(`${root}/`, baseURL).href);
     await page.getByRole('button', { name: '直接开始，一起学英语' }).click();
-    await expect(page.getByRole('heading', { name: '一起学英语', exact: true })).toBeVisible();
+    await expect(page.getByTestId('map-page')).toBeVisible();
     const originalUserId = (await rows(page, 'users'))[0]!.id;
     let documentReloads = 0;
     page.on('load', () => {

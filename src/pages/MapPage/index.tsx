@@ -1,38 +1,93 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
+  ArrowLeft,
   ArrowRight,
   BookOpen,
   Check,
-  ChevronRight,
   Clock3,
-  Flame,
+  Compass,
+  Crown,
+  Castle,
+  Mountain,
+  Waves,
+  CloudSun,
+  Stars,
+  Hourglass,
+  Gem,
+  LocateFixed,
   LockKeyhole,
+  Settings2,
   Sparkles,
-  Sprout,
+  Star,
 } from 'lucide-react';
 import { db, type User, type UserProgress } from '@/db';
 import { initializeAppData, needsInitialization } from '@/services/dataInitService';
 import { getUserMapNodes } from '@/services/mapProgressService';
-import { getEffectiveStreak } from '@/services/learningActivityService';
 import { getStoryById } from '@/data';
 import { findActiveNode, generateUnifiedMapData, type UnifiedMapNode } from '@/data/unifiedMap';
 import { useAppStore } from '@/stores/useAppStore';
-import AppShell from '@/components/common/AppShell';
-import BuddyScene from '@/components/common/BuddyScene';
 import { Button, Modal } from '@/components/common';
 import styles from './MapPage.module.css';
 
 const mapData = generateUnifiedMapData();
-const regionIcons = ['🌲', '⛰️', '🌊', '☁️', '⭐', '⏳', '💎'];
-const regionDescriptions = [
-  '从一个单词开始，认识身边的小小世界。',
-  '让声音带路，发现山谷里的新故事。',
-  '跟随好奇心，潜入蓝色的故事世界。',
-  '穿过云朵，和城堡里的朋友一起冒险。',
-  '点亮一颗星，读懂一个更大的世界。',
-  '和伙伴穿越时光，发现新的可能。',
-  '用学到的英语，完成你的魔法冒险。',
+const worlds = [
+  {
+    name: '云端梦幻宫殿',
+    english: 'PALACE IN THE CLOUDS',
+    icon: '🏰',
+    color: '#cf8bc9',
+    sky: '#ece1fa',
+    description: '沿着云朵小径，和小动物一起寻找故事里的魔法。',
+  },
+  {
+    name: '回声山谷',
+    english: 'ECHO VALLEY',
+    icon: '⛰️',
+    color: '#9d8bd0',
+    sky: '#e5e3fa',
+    description: '听，山谷里的新朋友在呼唤你。',
+  },
+  {
+    name: '闪耀之海',
+    english: 'SHIMMERING SEA',
+    icon: '🐚',
+    color: '#58a8bf',
+    sky: '#d4eff6',
+    description: '跟着浪花，发现蓝色海洋里的秘密。',
+  },
+  {
+    name: '云端之城',
+    english: 'CITY OF CLOUDS',
+    icon: '🎈',
+    color: '#c88ba7',
+    sky: '#fae4ec',
+    description: '乘着气球，去云端寻找新的朋友。',
+  },
+  {
+    name: '永恒星空',
+    english: 'STARLIGHT KINGDOM',
+    icon: '🌟',
+    color: '#8e88bd',
+    sky: '#e1dff5',
+    description: '每读懂一个故事，就点亮一颗星星。',
+  },
+  {
+    name: '时光回廊',
+    english: 'GARDEN OF TIME',
+    icon: '⏳',
+    color: '#a08bba',
+    sky: '#ece2f2',
+    description: '推开时光之门，让好奇心带你去远方。',
+  },
+  {
+    name: '创世之核',
+    english: 'CRYSTAL HEART',
+    icon: '💎',
+    color: '#75a7ad',
+    sky: '#def1ee',
+    description: '带上所有的魔法，开启最后的奇妙旅程。',
+  },
 ];
 const typeLabels: Record<string, string> = {
   story: '故事阅读',
@@ -40,6 +95,9 @@ const typeLabels: Record<string, string> = {
   challenge: '趣味练习',
   bonus: '奖励关卡',
 };
+const worldIcons = [Castle, Mountain, Waves, CloudSun, Stars, Hourglass, Gem];
+const STEP = 156;
+const nodeX = (index: number) => [50, 27, 49, 73, 51, 28, 48, 72][index % 8]!;
 
 export default function MapPage() {
   const navigate = useNavigate();
@@ -48,9 +106,12 @@ export default function MapPage() {
   const [user, setUser] = useState<User | null>(null);
   const [progress, setProgress] = useState<UserProgress | null>(null);
   const [region, setRegion] = useState(1);
+  const [overview, setOverview] = useState(false);
   const [selected, setSelected] = useState<UnifiedMapNode | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [offline, setOffline] = useState(!navigator.onLine);
+  const viewport = useRef<HTMLDivElement>(null);
   const load = useCallback(async () => {
     setLoading(true);
     setError(false);
@@ -108,22 +169,113 @@ export default function MapPage() {
     void load();
   }, [load]);
   const activeNode = findActiveNode(nodes);
-  const activeStory = activeNode?.storyId ? getStoryById(activeNode.storyId) : null;
-  const section = mapData.sections[region - 1]!;
+  const world = worlds[region - 1]!;
   const regionNodes = nodes.filter(n => n.level === region);
   const completed = regionNodes.filter(n => n.completed).length;
   const selectedStory = selected?.storyId ? getStoryById(selected.storyId) : null;
+  const current = regionNodes.find(n => n.id === activeNode?.id);
+  const focusIndex = overview
+    ? (activeNode?.level ?? 1) - 1
+    : Math.max(
+        0,
+        regionNodes.findIndex(n => n.id === activeNode?.id)
+      );
+  const count = overview ? worlds.length : regionNodes.length;
+  const mapHeight = count * STEP + 450;
+  const nodeY = (index: number) => mapHeight - 180 - index * STEP;
+  const locate = useCallback(() => {
+    const el = viewport.current;
+    if (el) el.scrollTop = mapHeight - 180 - focusIndex * STEP - el.clientHeight + 190;
+  }, [mapHeight, focusIndex]);
+  useEffect(() => {
+    if (!loading) locate();
+  }, [loading, region, overview, locate]);
+  useEffect(() => {
+    const update = () => setOffline(!navigator.onLine);
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+    return () => {
+      window.removeEventListener('online', update);
+      window.removeEventListener('offline', update);
+    };
+  }, []);
   const startNode = (node: UnifiedMapNode) => {
     if (!node.unlocked || !node.storyId) return;
     navigate(
       `/${node.type === 'challenge' || node.type === 'bonus' ? 'quiz' : 'reader'}/${node.storyId}`
     );
   };
+  const points = Array.from({ length: count }, (_, i) => ({ x: nodeX(i), y: nodeY(i) }));
+  const path = points
+    .map((p, i) =>
+      i === 0
+        ? `M ${p.x} ${p.y}`
+        : `C ${points[i - 1]!.x} ${p.y + STEP * 0.5}, ${p.x} ${p.y + STEP * 0.5}, ${p.x} ${p.y}`
+    )
+    .join(' ');
+  const openRegion = (level: number) => {
+    setRegion(level);
+    setOverview(false);
+  };
   return (
-    <AppShell
-      title={user?.name === '小小探险队' ? '一起学英语' : user ? `你好，${user.name}` : '魔法地图'}
-      subtitle="和老师、伙伴一起，听一个新的故事。"
+    <div
+      className={`${styles.game} ${!overview && region === 1 ? styles.cloudWorld : ''}`}
+      style={{ '--world-color': world.color, '--world-sky': world.sky } as CSSProperties}
+      data-testid="map-page"
     >
+      <a className={styles.skip} href="#adventure-map">
+        跳到冒险地图
+      </a>
+      <header className={styles.hud}>
+        <button
+          className={styles.worldButton}
+          onClick={() => setOverview(v => !v)}
+          aria-label={overview ? '返回关卡地图' : '查看总地图'}
+        >
+          {overview ? <ArrowLeft size={22} /> : <Compass size={23} />}
+          <span>{overview ? '返回' : '总地图'}</span>
+        </button>
+        <Link to="/scroll" className={styles.avatarLink} aria-label="成长记录">
+          <span className={styles.avatar} aria-hidden="true">
+            <span className={styles.ponyPortrait} />
+          </span>
+          <span className={styles.avatarLevel}>Lv.{progress?.buddyStage ?? 1}</span>
+        </Link>
+        <div className={styles.score} aria-label={`积分 ${progress?.magicPower ?? 0} 魔力`}>
+          <Star size={20} fill="currentColor" />
+          <strong>{progress?.magicPower ?? 0}</strong>
+          <span>魔力</span>
+        </div>
+        <Link to="/settings" className={styles.settings} aria-label="设置">
+          <Settings2 size={23} />
+        </Link>
+      </header>
+      <section className={styles.worldTitle}>
+        <span className={styles.eyebrow}>
+          {overview ? 'YOUR MAGICAL WORLDS' : `LEVEL ${region} · ${world.english}`}
+        </span>
+        <h1>{overview ? '七个世界，一场奇遇' : world.name}</h1>
+        <p>{overview ? '从云端出发，把每个世界都变成你的故事。' : world.description}</p>
+        {!overview && (
+          <div className={styles.progressLine}>
+            <span>故事旅程</span>
+            <progress
+              value={completed}
+              max={regionNodes.length || 1}
+              aria-label={`${world.name}完成进度`}
+            />
+            <b>
+              {completed}
+              <span> / {regionNodes.length}</span>
+            </b>
+          </div>
+        )}
+        {offline && (
+          <span className={styles.offline} role="status">
+            当前离线 · 已下载的故事仍可冒险
+          </span>
+        )}
+      </section>
       {loading ? (
         <div className={styles.status} role="status">
           正在展开你的魔法地图…
@@ -135,255 +287,227 @@ export default function MapPage() {
           <Button onClick={load}>重新加载</Button>
         </div>
       ) : (
-        <div data-testid="map-page">
-          <div className={styles.topGrid}>
-            <section className={styles.hero}>
-              <div className={styles.heroCopy}>
-                <span className={styles.overline}>
-                  <span /> {activeNode?.completed ? '重温你的冒险' : '今天的冒险'}
-                </span>
-                <h2>
-                  每一个故事，
-                  <br />
-                  都是一场<span>小魔法。</span>
-                </h2>
-                <p>
-                  和 {user?.buddyName || '伙伴'} 一起听一听、读一读，
-                  <br className={styles.desktopBreak} />
-                  把好奇心变成新的英语超能力。
-                </p>
-                {activeNode && (
-                  <Button
-                    onClick={() => startNode(activeNode)}
-                    rightIcon={<ArrowRight size={17} />}
-                  >
-                    {activeNode.completed
-                      ? '再读一次'
-                      : progress?.totalStoriesRead
-                        ? '继续学习'
-                        : '开始第一个故事'}
-                  </Button>
-                )}
-                {activeStory && (
-                  <span className={styles.heroMeta}>
-                    {activeStory.titleCn} <span>·</span> 约 {activeStory.metadata.estimatedTime}{' '}
-                    分钟
-                  </span>
-                )}
-              </div>
-              <BuddyScene className={styles.heroArt} />
-              <span className={styles.heroFootnote}>A LITTLE STORY. A LITTLE MAGIC.</span>
-            </section>
-            <aside className={styles.buddyCard}>
-              <div className={styles.cardHeading}>
-                <Sparkles size={18} />
-                <span>我们的魔法伙伴</span>
-                <Link to="/scroll" aria-label="查看伙伴成长">
-                  <ChevronRight size={18} />
-                </Link>
-              </div>
-              <div className={styles.buddyIdentity}>
-                <span className={styles.buddyEmoji} aria-hidden="true">
-                  {['🥚', '🐣', '🐲', '🦋'][(progress?.buddyStage ?? 1) - 1]}
-                </span>
-                <div>
-                  <h3>{user?.buddyName}</h3>
-                  <span>和你一起，一点点长大</span>
-                </div>
-              </div>
-              <div className={styles.buddyMessage}>
-                “ 不用着急，我会陪你
-                <br />
-                读懂每一个新单词。 ”
-              </div>
-              <Link to="/scroll" className={styles.buddyLink}>
-                查看这台设备的学习记录 <ArrowRight size={15} />
-              </Link>
-            </aside>
-          </div>
-          <section className={styles.stats} aria-label="本设备的学习记录">
-            <div>
-              <span className={`${styles.statIcon} ${styles.amber}`}>
-                <Flame size={20} />
-              </span>
-              <strong>
-                {progress ? getEffectiveStreak(progress) : 0}
-                <small>天</small>
-              </strong>
-              <span>连续学习</span>
-            </div>
-            <div>
-              <span className={`${styles.statIcon} ${styles.lilac}`}>
-                <Sparkles size={20} />
-              </span>
-              <strong>{progress?.magicPower ?? 0}</strong>
-              <span>积累魔力</span>
-            </div>
-            <div>
-              <span className={`${styles.statIcon} ${styles.green}`}>
-                <BookOpen size={20} />
-              </span>
-              <strong>
-                {progress?.totalStoriesRead ?? 0}
-                <small>篇</small>
-              </strong>
-              <span>读过的故事</span>
-            </div>
-          </section>
-          <section className={styles.explore} aria-labelledby="explore-heading">
-            <div className={styles.sectionHeading}>
-              <div>
-                <span className={styles.overline}>YOUR LEARNING JOURNEY</span>
-                <h2 id="explore-heading">探索魔法世界</h2>
-              </div>
-              <span className={styles.worldCount}>7 个世界 · 一步步探索</span>
-            </div>
-            <div className={styles.regions} role="group" aria-label="选择学习区域">
-              {mapData.sections.map((s, index) => (
-                <button
-                  key={s.level}
-                  className={`${styles.regionTab} ${region === s.level ? styles.regionActive : ''}`}
-                  onClick={() => setRegion(s.level)}
-                  aria-pressed={region === s.level}
-                >
-                  <span className={styles.regionEmoji} aria-hidden="true">
-                    {regionIcons[index]}
-                  </span>
-                  <strong>{s.region.nameCn}</strong>
-                  <span>
-                    LEVEL {s.level}
-                    {!nodes.some(n => n.level === s.level && n.unlocked) && (
-                      <LockKeyhole size={11} aria-label="未解锁" />
-                    )}
-                  </span>
-                </button>
-              ))}
-            </div>
-            <div className={styles.journey}>
-              <div className={styles.regionHeading}>
-                <span className={styles.forestBadge} aria-hidden="true">
-                  {regionIcons[region - 1]}
-                </span>
-                <div>
-                  <span className={styles.regionEyebrow}>
-                    LEVEL {region} · {section.region.name}
-                  </span>
-                  <h3>{section.region.nameCn}</h3>
-                  <p>{regionDescriptions[region - 1]}</p>
-                </div>
-                <div className={styles.regionProgress}>
-                  <span>
-                    <strong>{completed}</strong> / {regionNodes.length} 已完成
-                  </span>
-                  <progress
-                    value={completed}
-                    max={regionNodes.length || 1}
-                    aria-label={`${section.region.nameCn}完成进度`}
-                  />
-                </div>
-              </div>
-              <ol className={styles.lessonList}>
-                {regionNodes.map((node, index) => (
-                  <li key={node.id}>
-                    <button
-                      data-testid={`map-node-${node.storyId || node.id}`}
-                      className={`${styles.lesson} ${activeNode?.id === node.id ? styles.currentLesson : ''} ${!node.unlocked ? styles.lockedLesson : ''}`}
-                      onClick={() => setSelected(node)}
-                      aria-label={`${node.titleCn}，${node.completed ? '已完成，可重温' : node.unlocked ? '可以开始' : '未解锁，查看条件'}`}
-                    >
-                      <span className={styles.lessonNumber}>
-                        {String(index + 1).padStart(2, '0')}
-                      </span>
-                      <span className={styles.lessonEmoji} aria-hidden="true">
-                        {node.emoji || '📖'}
-                      </span>
-                      <span className={styles.lessonInfo}>
-                        <strong>{node.titleCn}</strong>
-                        <span lang="en">{node.title}</span>
-                      </span>
-                      <span className={styles.lessonType}>{typeLabels[node.type] || '冒险'}</span>
-                      <span className={styles.lessonStatus}>
-                        {node.completed ? (
-                          <Check size={20} />
-                        ) : node.unlocked ? (
-                          <span>
-                            开始 <ArrowRight size={16} />
-                          </span>
-                        ) : (
-                          <LockKeyhole size={17} />
-                        )}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ol>
-              <div className={styles.journeyNote}>
-                <Sprout size={16} /> 每完成一个关卡，就离新的世界更近一步。
-              </div>
-            </div>
-          </section>
-          <Modal
-            open={!!selected}
-            onClose={() => setSelected(null)}
-            title={selected?.unlocked ? '准备开始冒险' : '下一站的惊喜'}
-            size="sm"
+        <>
+          <div
+            ref={viewport}
+            className={styles.viewport}
+            id="adventure-map"
+            tabIndex={0}
+            aria-label={
+              overview ? '总地图，从下往上探索七个世界' : `第${region}级故事地图，从下往上前进`
+            }
           >
-            {selected && (
-              <div className={styles.preview} data-testid="node-preview">
-                <span className={styles.previewEmoji} aria-hidden="true">
-                  {selected.emoji}
-                </span>
-                <span className={styles.overline}>
-                  LEVEL {selected.level} · {typeLabels[selected.type]}
-                </span>
-                <h2>{selected.titleCn}</h2>
-                <p lang="en">{selected.title}</p>
-                {selectedStory && (
-                  <div className={styles.previewMeta}>
-                    <span>
-                      <BookOpen size={15} />
-                      {selectedStory.metadata.wordCount} 词
-                    </span>
-                    <span>
-                      <Clock3 size={15} />约 {selectedStory.metadata.estimatedTime} 分钟
-                    </span>
-                  </div>
+            <div
+              className={`${styles.terrain} ${!overview && region === 1 ? styles.palace : styles.simpleTerrain}`}
+              style={{ height: mapHeight }}
+            >
+              <div className={styles.destination}>
+                <Crown size={26} />
+                <strong>
+                  {overview
+                    ? '每个世界，都有新的魔法'
+                    : region === 7
+                      ? '魔法冒险家，终点见！'
+                      : `通往 ${worlds[region]?.name}`}
+                </strong>
+                {!overview && completed === regionNodes.length && region < 7 && (
+                  <button onClick={() => openRegion(region + 1)}>
+                    进入下一个世界 <ArrowRight size={15} />
+                  </button>
                 )}
-                {selected.unlocked ? (
-                  <Button
-                    fullWidth
-                    onClick={() => startNode(selected)}
-                    rightIcon={<ArrowRight size={17} />}
-                  >
-                    {selected.completed ? '重温故事' : '开始学习'}
-                  </Button>
-                ) : (
-                  <>
-                    <p className={styles.unlockHint}>
-                      先完成
-                      {selected.prerequisites.length
-                        ? `「${nodes.find(n => n.id === selected.prerequisites[0])?.titleCn || '前一个关卡'}」`
-                        : '前一个关卡'}
-                      ，就能解锁这里。
-                    </p>
-                    <Button
-                      fullWidth
-                      onClick={() => {
-                        if (activeNode) {
-                          setRegion(activeNode.level);
-                          setSelected(activeNode);
-                        }
-                      }}
-                    >
-                      查看当前关卡
-                    </Button>
-                  </>
-                )}
+              </div>
+              <svg
+                className={styles.route}
+                viewBox={`0 0 100 ${mapHeight}`}
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <path d={path} className={styles.pathShadow} />
+                <path d={path} className={styles.path} />
+              </svg>
+              <ol className={styles.nodes} aria-label={overview ? '七个世界' : '故事关卡'}>
+                {overview
+                  ? worlds.map((w, i) => {
+                      const WorldIcon = worldIcons[i]!;
+                      const worldNodes = nodes.filter(n => n.level === i + 1);
+                      const done = worldNodes.filter(n => n.completed).length;
+                      const unlocked = worldNodes.some(n => n.unlocked);
+                      return (
+                        <li
+                          key={w.name}
+                          className={`${styles.node} ${styles.worldNode} ${!unlocked ? styles.locked : ''}`}
+                          style={{ left: `${nodeX(i)}%`, top: nodeY(i) }}
+                        >
+                          <button
+                            onClick={() => openRegion(i + 1)}
+                            aria-label={`LEVEL ${i + 1} ${w.name}${unlocked ? '' : '，未解锁，可预览'}`}
+                          >
+                            <span className={styles.worldDisc}>
+                              <WorldIcon size={36} />
+                            </span>
+                            <span className={styles.nodeLabel}>
+                              <small>LEVEL {i + 1}</small>
+                              <strong>{w.name}</strong>
+                              <span>
+                                {unlocked
+                                  ? `${done} / ${worldNodes.length} 个故事`
+                                  : '未解锁 · 可以先看看'}
+                              </span>
+                            </span>
+                          </button>
+                          {activeNode?.level === i + 1 && (
+                            <span className={styles.here}>我们在这里</span>
+                          )}
+                        </li>
+                      );
+                    })
+                  : regionNodes.map((node, i) => (
+                      <li
+                        key={node.id}
+                        className={`${styles.node} ${!node.unlocked ? styles.locked : ''} ${node.completed ? styles.completed : ''} ${activeNode?.id === node.id ? styles.current : ''}`}
+                        style={{ left: `${nodeX(i)}%`, top: nodeY(i) }}
+                      >
+                        {activeNode?.id === node.id && (
+                          <div
+                            className={styles.character}
+                            aria-label={`${user?.buddyName || '伙伴'}所在位置`}
+                          >
+                            <span className={styles.ponyPortrait} />
+                            <b>到这里啦！</b>
+                          </div>
+                        )}
+                        <button
+                          data-testid={`map-node-${node.storyId || node.id}`}
+                          onClick={() => setSelected(node)}
+                          aria-label={`${node.titleCn}，${node.completed ? '已完成，可重温' : node.unlocked ? '可以开始' : '未解锁，查看条件'}`}
+                          aria-current={activeNode?.id === node.id ? 'step' : undefined}
+                        >
+                          <span className={styles.disc}>
+                            {node.completed ? (
+                              <Check size={26} strokeWidth={3} />
+                            ) : !node.unlocked ? (
+                              <LockKeyhole size={22} />
+                            ) : node.isLevelEnd ? (
+                              <Crown size={27} />
+                            ) : (
+                              <Star size={28} fill="currentColor" />
+                            )}
+                          </span>
+                          <span className={styles.stars} aria-hidden="true">
+                            {node.completed ? '✦ ✦ ✦' : `— ${String(i + 1).padStart(2, '0')} —`}
+                          </span>
+                          <span className={styles.nodeLabel}>
+                            <strong>{node.titleCn}</strong>
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+              </ol>
+              <div className={styles.startSign}>
+                <Sparkles size={17} />
+                {overview ? '从这里，开启你的魔法世界' : '每一个小故事，都是向前的一步'}
+              </div>
+            </div>
+          </div>
+          <button className={styles.locate} onClick={locate} aria-label="定位当前关卡">
+            <LocateFixed size={21} />
+          </button>
+          {!overview && current && (
+            <div className={styles.quest}>
+              <span className={styles.questIcon}>✦</span>
+              <div>
+                <small>
+                  {current.completed
+                    ? '世界已通关 · 重温故事'
+                    : `下一段冒险 · 第 ${current.levelIndex + 1} 站`}
+                </small>
+                <strong>{current.titleCn}</strong>
+              </div>
+              <button
+                onClick={() => startNode(current)}
+                aria-label={
+                  current.completed
+                    ? '再读一次'
+                    : progress?.totalStoriesRead
+                      ? '继续学习'
+                      : '开始第一个故事'
+                }
+              >
+                {current.completed ? '重温' : '出发'}
+                <ArrowRight size={17} />
+              </button>
+            </div>
+          )}
+          {!overview && !current && (
+            <button
+              className={styles.returnCurrent}
+              onClick={() => openRegion(activeNode?.level ?? 1)}
+            >
+              回到我的冒险 <ArrowRight size={16} />
+            </button>
+          )}
+        </>
+      )}
+      <Modal
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        title={selected?.unlocked ? '准备开始冒险' : '下一站的惊喜'}
+        size="sm"
+      >
+        {selected && (
+          <div className={styles.preview} data-testid="node-preview">
+            <span className={styles.previewEmoji} aria-hidden="true">
+              {selected.emoji || '📖'}
+            </span>
+            <span className={styles.eyebrow}>
+              LEVEL {selected.level} · {typeLabels[selected.type] || '故事冒险'}
+            </span>
+            <h2>{selected.titleCn}</h2>
+            <p lang="en">{selected.title}</p>
+            {selectedStory && (
+              <div className={styles.previewMeta}>
+                <span>
+                  <BookOpen size={15} />
+                  {selectedStory.metadata.wordCount} 词
+                </span>
+                <span>
+                  <Clock3 size={15} />约 {selectedStory.metadata.estimatedTime} 分钟
+                </span>
               </div>
             )}
-          </Modal>
-        </div>
-      )}
-    </AppShell>
+            {selected.unlocked ? (
+              <Button
+                fullWidth
+                onClick={() => startNode(selected)}
+                rightIcon={<ArrowRight size={17} />}
+              >
+                {selected.completed ? '重温故事' : '开始学习'}
+              </Button>
+            ) : (
+              <>
+                <p>
+                  先完成
+                  {selected.prerequisites.length
+                    ? `「${nodes.find(n => n.id === selected.prerequisites[0])?.titleCn || '前一个关卡'}」`
+                    : '前一个关卡'}
+                  ，就能解锁这里。
+                </p>
+                <Button
+                  fullWidth
+                  onClick={() => {
+                    if (activeNode) {
+                      openRegion(activeNode.level);
+                      setSelected(activeNode);
+                    }
+                  }}
+                >
+                  查看当前关卡
+                </Button>
+              </>
+            )}
+          </div>
+        )}
+      </Modal>
+    </div>
   );
 }
