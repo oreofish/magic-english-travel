@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -28,6 +35,7 @@ import { getStoryById } from '@/data';
 import { findActiveNode, generateUnifiedMapData, type UnifiedMapNode } from '@/data/unifiedMap';
 import { useAppStore } from '@/stores/useAppStore';
 import { Button, Modal } from '@/components/common';
+import DesktopMap from './DesktopMap';
 import styles from './MapPage.module.css';
 
 const mapData = generateUnifiedMapData();
@@ -96,11 +104,20 @@ const typeLabels: Record<string, string> = {
   bonus: '奖励关卡',
 };
 const worldIcons = [Castle, Mountain, Waves, CloudSun, Stars, Hourglass, Gem];
+const desktopQuery = '(min-width: 1024px) and (orientation: landscape)';
+function subscribeDesktop(onChange: () => void) {
+  const media = window.matchMedia(desktopQuery);
+  media.addEventListener('change', onChange);
+  return () => media.removeEventListener('change', onChange);
+}
+const isDesktop = () => window.matchMedia(desktopQuery).matches;
+const isServerDesktop = () => false;
 const STEP = 156;
 const nodeX = (index: number) => [50, 27, 49, 73, 51, 28, 48, 72][index % 8]!;
 
 export default function MapPage() {
   const navigate = useNavigate();
+  const desktop = useSyncExternalStore(subscribeDesktop, isDesktop, isServerDesktop);
   const currentUserId = useAppStore(s => s.currentUserId);
   const [nodes, setNodes] = useState<UnifiedMapNode[]>([]);
   const [user, setUser] = useState<User | null>(null);
@@ -169,7 +186,19 @@ export default function MapPage() {
     void load();
   }, [load]);
   const activeNode = findActiveNode(nodes);
-  const world = worlds[region - 1]!;
+  const visibleWorlds = desktop
+    ? [
+        {
+          ...worlds[0]!,
+          name: '萌芽之森',
+          english: 'SPROUT FOREST',
+          icon: '🌳',
+          description: '沿着溪边小路，收集故事皇冠。',
+        },
+        ...worlds.slice(1),
+      ]
+    : worlds;
+  const world = visibleWorlds[region - 1]!;
   const regionNodes = nodes.filter(n => n.level === region);
   const completed = regionNodes.filter(n => n.completed).length;
   const selectedStory = selected?.storyId ? getStoryById(selected.storyId) : null;
@@ -189,7 +218,7 @@ export default function MapPage() {
   }, [mapHeight, focusIndex]);
   useEffect(() => {
     if (!loading) locate();
-  }, [loading, region, overview, locate]);
+  }, [loading, region, overview, desktop, locate]);
   useEffect(() => {
     const update = () => setOffline(!navigator.onLine);
     window.addEventListener('online', update);
@@ -219,8 +248,9 @@ export default function MapPage() {
   };
   return (
     <div
-      className={`${styles.game} ${!overview && region === 1 ? styles.cloudWorld : ''}`}
+      className={`${styles.game} ${desktop ? styles.desktop : !overview && region === 1 ? styles.cloudWorld : ''}`}
       style={{ '--world-color': world.color, '--world-sky': world.sky } as CSSProperties}
+      data-desktop-valley={desktop && !overview && region === 2 ? true : undefined}
       data-testid="map-page"
     >
       <a className={styles.skip} href="#adventure-map">
@@ -255,7 +285,13 @@ export default function MapPage() {
           {overview ? 'YOUR MAGICAL WORLDS' : `LEVEL ${region} · ${world.english}`}
         </span>
         <h1>{overview ? '七个世界，一场奇遇' : world.name}</h1>
-        <p>{overview ? '从云端出发，把每个世界都变成你的故事。' : world.description}</p>
+        <p>
+          {overview
+            ? desktop
+              ? '选择一个世界，沿道路探索故事。'
+              : '从云端出发，把每个世界都变成你的故事。'
+            : world.description}
+        </p>
         {!overview && (
           <div className={styles.progressLine}>
             <span>故事旅程</span>
@@ -288,128 +324,152 @@ export default function MapPage() {
         </div>
       ) : (
         <>
-          <div
-            ref={viewport}
-            className={styles.viewport}
-            id="adventure-map"
-            tabIndex={0}
-            aria-label={
-              overview ? '总地图，从下往上探索七个世界' : `第${region}级故事地图，从下往上前进`
-            }
-          >
+          {desktop ? (
+            <DesktopMap
+              overview={overview}
+              region={region}
+              worlds={visibleWorlds}
+              nodes={nodes}
+              regionNodes={regionNodes}
+              activeNode={activeNode}
+              onOpenRegion={openRegion}
+              onSelectNode={setSelected}
+            />
+          ) : (
             <div
-              className={`${styles.terrain} ${!overview && region === 1 ? styles.palace : styles.simpleTerrain}`}
-              style={{ height: mapHeight }}
+              ref={viewport}
+              className={styles.viewport}
+              id="adventure-map"
+              tabIndex={0}
+              aria-label={
+                overview ? '总地图，从下往上探索七个世界' : `第${region}级故事地图，从下往上前进`
+              }
             >
-              <div className={styles.destination}>
-                <Crown size={26} />
-                <strong>
-                  {overview
-                    ? '每个世界，都有新的魔法'
-                    : region === 7
-                      ? '魔法冒险家，终点见！'
-                      : `通往 ${worlds[region]?.name}`}
-                </strong>
-                {!overview && completed === regionNodes.length && region < 7 && (
-                  <button onClick={() => openRegion(region + 1)}>
-                    进入下一个世界 <ArrowRight size={15} />
-                  </button>
-                )}
-              </div>
-              <svg
-                className={styles.route}
-                viewBox={`0 0 100 ${mapHeight}`}
-                preserveAspectRatio="none"
-                aria-hidden="true"
+              <div
+                className={`${styles.terrain} ${!overview && region === 1 ? styles.palace : styles.simpleTerrain}`}
+                style={{ height: mapHeight }}
               >
-                <path d={path} className={styles.pathShadow} />
-                <path d={path} className={styles.path} />
-              </svg>
-              <ol className={styles.nodes} aria-label={overview ? '七个世界' : '故事关卡'}>
-                {overview
-                  ? worlds.map((w, i) => {
-                      const WorldIcon = worldIcons[i]!;
-                      const worldNodes = nodes.filter(n => n.level === i + 1);
-                      const done = worldNodes.filter(n => n.completed).length;
-                      const unlocked = worldNodes.some(n => n.unlocked);
-                      return (
+                <div className={styles.destination}>
+                  <Crown size={26} />
+                  <strong>
+                    {overview
+                      ? '每个世界，都有新的魔法'
+                      : region === 7
+                        ? '魔法冒险家，终点见！'
+                        : `通往 ${worlds[region]?.name}`}
+                  </strong>
+                  {!overview && completed === regionNodes.length && region < 7 && (
+                    <button onClick={() => openRegion(region + 1)}>
+                      进入下一个世界 <ArrowRight size={15} />
+                    </button>
+                  )}
+                </div>
+                <svg
+                  className={styles.route}
+                  viewBox={`0 0 100 ${mapHeight}`}
+                  preserveAspectRatio="none"
+                  aria-hidden="true"
+                >
+                  <path d={path} className={styles.pathShadow} />
+                  <path d={path} className={styles.path} />
+                </svg>
+                <ol className={styles.nodes} aria-label={overview ? '七个世界' : '故事关卡'}>
+                  {overview
+                    ? worlds.map((w, i) => {
+                        const WorldIcon = worldIcons[i]!;
+                        const worldNodes = nodes.filter(n => n.level === i + 1);
+                        const done = worldNodes.filter(n => n.completed).length;
+                        const unlocked = worldNodes.some(n => n.unlocked);
+                        return (
+                          <li
+                            key={w.name}
+                            className={`${styles.node} ${styles.worldNode} ${!unlocked ? styles.locked : ''}`}
+                            style={{ left: `${nodeX(i)}%`, top: nodeY(i) }}
+                          >
+                            <button
+                              onClick={() => openRegion(i + 1)}
+                              aria-label={`LEVEL ${i + 1} ${w.name}${unlocked ? '' : '，未解锁，可预览'}`}
+                            >
+                              <span className={styles.worldDisc}>
+                                <WorldIcon size={36} />
+                              </span>
+                              <span className={styles.nodeLabel}>
+                                <small>LEVEL {i + 1}</small>
+                                <strong>{w.name}</strong>
+                                <span>
+                                  {unlocked
+                                    ? `${done} / ${worldNodes.length} 个故事`
+                                    : '未解锁 · 可以先看看'}
+                                </span>
+                              </span>
+                            </button>
+                            {activeNode?.level === i + 1 && (
+                              <span className={styles.here}>我们在这里</span>
+                            )}
+                          </li>
+                        );
+                      })
+                    : regionNodes.map((node, i) => (
                         <li
-                          key={w.name}
-                          className={`${styles.node} ${styles.worldNode} ${!unlocked ? styles.locked : ''}`}
+                          key={node.id}
+                          className={`${styles.node} ${!node.unlocked ? styles.locked : ''} ${node.completed ? styles.completed : ''} ${activeNode?.id === node.id ? styles.current : ''}`}
                           style={{ left: `${nodeX(i)}%`, top: nodeY(i) }}
                         >
+                          {activeNode?.id === node.id && (
+                            <div
+                              className={styles.character}
+                              aria-label={`${user?.buddyName || '伙伴'}所在位置`}
+                            >
+                              <span className={styles.ponyPortrait} />
+                              <b>到这里啦！</b>
+                            </div>
+                          )}
                           <button
-                            onClick={() => openRegion(i + 1)}
-                            aria-label={`LEVEL ${i + 1} ${w.name}${unlocked ? '' : '，未解锁，可预览'}`}
+                            data-testid={`map-node-${node.storyId || node.id}`}
+                            onClick={() => setSelected(node)}
+                            aria-label={`${node.titleCn}，${node.completed ? '已完成，可重温' : node.unlocked ? '可以开始' : '未解锁，查看条件'}`}
+                            aria-current={activeNode?.id === node.id ? 'step' : undefined}
                           >
-                            <span className={styles.worldDisc}>
-                              <WorldIcon size={36} />
+                            <span className={styles.disc}>
+                              {node.completed ? (
+                                <Check size={26} strokeWidth={3} />
+                              ) : !node.unlocked ? (
+                                <LockKeyhole size={22} />
+                              ) : node.isLevelEnd ? (
+                                <Crown size={27} />
+                              ) : (
+                                <Star size={28} fill="currentColor" />
+                              )}
+                            </span>
+                            <span className={styles.stars} aria-hidden="true">
+                              {node.completed ? '✦ ✦ ✦' : `— ${String(i + 1).padStart(2, '0')} —`}
                             </span>
                             <span className={styles.nodeLabel}>
-                              <small>LEVEL {i + 1}</small>
-                              <strong>{w.name}</strong>
-                              <span>
-                                {unlocked
-                                  ? `${done} / ${worldNodes.length} 个故事`
-                                  : '未解锁 · 可以先看看'}
-                              </span>
+                              <strong>{node.titleCn}</strong>
                             </span>
                           </button>
-                          {activeNode?.level === i + 1 && (
-                            <span className={styles.here}>我们在这里</span>
-                          )}
                         </li>
-                      );
-                    })
-                  : regionNodes.map((node, i) => (
-                      <li
-                        key={node.id}
-                        className={`${styles.node} ${!node.unlocked ? styles.locked : ''} ${node.completed ? styles.completed : ''} ${activeNode?.id === node.id ? styles.current : ''}`}
-                        style={{ left: `${nodeX(i)}%`, top: nodeY(i) }}
-                      >
-                        {activeNode?.id === node.id && (
-                          <div
-                            className={styles.character}
-                            aria-label={`${user?.buddyName || '伙伴'}所在位置`}
-                          >
-                            <span className={styles.ponyPortrait} />
-                            <b>到这里啦！</b>
-                          </div>
-                        )}
-                        <button
-                          data-testid={`map-node-${node.storyId || node.id}`}
-                          onClick={() => setSelected(node)}
-                          aria-label={`${node.titleCn}，${node.completed ? '已完成，可重温' : node.unlocked ? '可以开始' : '未解锁，查看条件'}`}
-                          aria-current={activeNode?.id === node.id ? 'step' : undefined}
-                        >
-                          <span className={styles.disc}>
-                            {node.completed ? (
-                              <Check size={26} strokeWidth={3} />
-                            ) : !node.unlocked ? (
-                              <LockKeyhole size={22} />
-                            ) : node.isLevelEnd ? (
-                              <Crown size={27} />
-                            ) : (
-                              <Star size={28} fill="currentColor" />
-                            )}
-                          </span>
-                          <span className={styles.stars} aria-hidden="true">
-                            {node.completed ? '✦ ✦ ✦' : `— ${String(i + 1).padStart(2, '0')} —`}
-                          </span>
-                          <span className={styles.nodeLabel}>
-                            <strong>{node.titleCn}</strong>
-                          </span>
-                        </button>
-                      </li>
-                    ))}
-              </ol>
-              <div className={styles.startSign}>
-                <Sparkles size={17} />
-                {overview ? '从这里，开启你的魔法世界' : '每一个小故事，都是向前的一步'}
+                      ))}
+                </ol>
+                <div className={styles.startSign}>
+                  <Sparkles size={17} />
+                  {overview ? '从这里，开启你的魔法世界' : '每一个小故事，都是向前的一步'}
+                </div>
               </div>
             </div>
-          </div>
-          <button className={styles.locate} onClick={locate} aria-label="定位当前关卡">
+          )}
+          <button
+            className={styles.locate}
+            onClick={() => {
+              if (desktop) {
+                const map = document.getElementById('adventure-map');
+                (map?.querySelector<HTMLElement>('[aria-current]') ?? map)?.focus();
+              } else {
+                locate();
+              }
+            }}
+            aria-label="定位当前关卡"
+          >
             <LocateFixed size={21} />
           </button>
           {!overview && current && (
@@ -441,9 +501,18 @@ export default function MapPage() {
           {!overview && !current && (
             <button
               className={styles.returnCurrent}
-              onClick={() => openRegion(activeNode?.level ?? 1)}
+              onClick={() =>
+                openRegion(
+                  desktop && completed === regionNodes.length && region < 7
+                    ? region + 1
+                    : (activeNode?.level ?? 1)
+                )
+              }
             >
-              回到我的冒险 <ArrowRight size={16} />
+              {desktop && completed === regionNodes.length && region < 7
+                ? '进入下一个世界'
+                : '回到我的冒险'}{' '}
+              <ArrowRight size={16} />
             </button>
           )}
         </>
@@ -474,6 +543,13 @@ export default function MapPage() {
                   <Clock3 size={15} />约 {selectedStory.metadata.estimatedTime} 分钟
                 </span>
               </div>
+            )}
+            {desktop && selectedStory && (
+              <p>
+                {selected.completed
+                  ? '已获得皇冠'
+                  : `首次通关获得皇冠及 ${selectedStory.rewards.magicPower} 魔力`}
+              </p>
             )}
             {selected.unlocked ? (
               <Button

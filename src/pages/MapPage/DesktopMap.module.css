@@ -1,0 +1,339 @@
+.map {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 9% 80%, var(--terrain-shade), transparent 44%),
+    radial-gradient(ellipse at 88% 16%, #fff8, transparent 48%),
+    repeating-radial-gradient(ellipse at 59% 22%, #fff3 0 1px, transparent 2px 31px), var(--terrain);
+}
+
+.atlas {
+  background:
+    radial-gradient(ellipse at 16% 76%, #d7e6b6, transparent 38%),
+    radial-gradient(ellipse at 80% 10%, #fbe8c4, transparent 48%),
+    repeating-radial-gradient(ellipse at 65% 75%, #fff7 0 1px, transparent 2px 30px), #beddd6;
+}
+
+.art,
+.road,
+.stops {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.art {
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.road {
+  pointer-events: none;
+}
+
+.road polyline {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+.roadEdge {
+  stroke: #82734e46;
+  stroke-width: 32px;
+}
+
+.roadSurface {
+  stroke: #f9e7ba;
+  stroke-width: 26px;
+}
+
+.storyRoute {
+  stroke: #fff3c9;
+  stroke-width: 3px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 1px 1px #2c352e);
+}
+
+.stops {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+}
+
+.stop {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+}
+
+.stop:hover,
+.stop:focus-within {
+  z-index: 2;
+}
+
+.storyStop {
+  width: 0;
+  height: 0;
+}
+
+.pin {
+  --diameter: clamp(30px, 2.5vw, 44px);
+  --balloon-fill: #535d66;
+  position: absolute;
+  bottom: 7px;
+  left: 50%;
+  width: var(--diameter);
+  height: var(--diameter);
+  transform: translateX(-50%);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #f1f4f7;
+}
+
+.pin[data-unlocked='true'] {
+  --balloon-fill: #ffdf8b;
+  color: #4b330c;
+}
+
+.dot {
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  transform: translate(-50%, 50%);
+  border: 2px solid #fff6db;
+  border-radius: 50%;
+  background: #535d66;
+  box-shadow: 0 1px 3px #1b2526a6;
+  pointer-events: none;
+}
+
+.pin[data-unlocked='true'] .dot {
+  background: #e9a732;
+}
+
+.pin[data-completed='true'] {
+  bottom: 0;
+  transform: translate(-50%, 50%);
+}
+
+.pin[data-completed='true'] .dot {
+  display: grid;
+  place-items: center;
+  bottom: 50%;
+  width: 24px;
+  height: 24px;
+  background: #306a4d;
+  color: #fff;
+}
+
+.balloon {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border: 2px solid #fff6db;
+  border-radius: 50%;
+  background: var(--balloon-fill);
+  filter: drop-shadow(0 2px 2px #1b252677);
+  pointer-events: none;
+}
+
+.balloon::after {
+  position: absolute;
+  top: calc(100% - 1px);
+  left: 50%;
+  width: 12px;
+  height: 9px;
+  transform: translateX(-50%);
+  background: #fff6db;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  content: '';
+}
+
+.pin[aria-current='step'] .balloon {
+  box-shadow: 0 0 0 3px #ffc95e99;
+}
+
+.lock {
+  position: absolute;
+  right: -4px;
+  bottom: -3px;
+  box-sizing: content-box;
+  padding: 2px;
+  border: 1px solid #f1f4f7;
+  border-radius: 50%;
+  background: var(--balloon-fill);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pin[aria-current='step'] .balloon {
+    animation: balloon-bob 1.8s ease-in-out infinite;
+  }
+}
+
+@keyframes balloon-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.pinLabel {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 7px 11px;
+  border-radius: 10px;
+  background: #263824;
+  color: #fffae7;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 3px 12px #25302355;
+}
+
+.stop:first-child .pinLabel {
+  left: 0;
+  transform: none;
+}
+
+.stop:last-child .pinLabel {
+  right: 0;
+  left: auto;
+  transform: none;
+}
+
+.pinLabel small {
+  display: block;
+  margin-top: 2px;
+  color: #ecdca9;
+}
+
+.pin:hover .pinLabel,
+.pin:focus-visible .pinLabel,
+.pin[aria-current='step'] .pinLabel {
+  display: block;
+}
+
+.world {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  width: min(12vw, 154px);
+  padding: 10px 5px;
+  border: 2px solid #fff7dc;
+  border-radius: 18px;
+  background: var(--island);
+  color: #263c2e;
+  box-shadow:
+    0 4px 0 #334e3966,
+    0 8px 20px #334e392e;
+}
+
+.world[aria-current='location'] {
+  outline: 3px solid #557b3f;
+  outline-offset: 3px;
+}
+
+.worldIcon {
+  font-size: clamp(28px, 4vw, 58px);
+  line-height: 1.2;
+}
+
+.valleyScenery {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.creekGlints,
+.grazingGoat {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .creekGlints,
+  .grazingGoat {
+    display: inline;
+  }
+
+  .creekGlints path {
+    fill: none;
+    stroke: #e0fbff;
+    stroke-width: 3px;
+    stroke-linecap: round;
+    stroke-dasharray: 19px 91px;
+    opacity: 0.68;
+    animation: creek-flow 2.6s linear infinite;
+  }
+
+  .creekGlints .distantGlints {
+    stroke-width: 2px;
+    stroke-dasharray: 10px 45px;
+  }
+
+  .creekGlints .outerGlints {
+    animation-delay: -1.2s;
+    opacity: 0.44;
+  }
+
+  .grazingGoat {
+    animation: goat-layer 13s steps(1, end) infinite;
+  }
+
+  .goatHead {
+    transform-origin: 1402px 130px;
+    animation: goat-graze 13s ease-in-out infinite;
+  }
+}
+
+@keyframes creek-flow {
+  to {
+    stroke-dashoffset: -110px;
+  }
+}
+
+@keyframes goat-layer {
+  0%,
+  78%,
+  100% {
+    visibility: hidden;
+  }
+
+  29% {
+    visibility: visible;
+  }
+}
+
+@keyframes goat-graze {
+  0%,
+  29%,
+  78%,
+  100% {
+    transform: rotate(0);
+  }
+
+  41%,
+  54%,
+  66% {
+    transform: rotate(-70deg);
+  }
+
+  48%,
+  60% {
+    transform: rotate(-62deg);
+  }
+}

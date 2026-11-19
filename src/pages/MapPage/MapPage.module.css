@@ -730,3 +730,94 @@
     gap: 10px;
   }
 }
+
+.desktop {
+  --ink: #354630;
+}
+
+.desktop .hud {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  padding: 24px;
+}
+
+.desktop .hud .worldButton {
+  flex-direction: row;
+  gap: 9px;
+  margin-right: auto;
+  padding-inline: 15px;
+  font-size: 14px;
+}
+
+.desktop .hud .worldButton,
+.desktop .hud .settings,
+.desktop .score,
+.desktop .worldTitle,
+.desktop .locate {
+  background: #fff9e8f5;
+  border-color: #fffdf4;
+  box-shadow: 0 4px 20px #14241632;
+}
+
+.desktop .score {
+  min-width: 69px;
+}
+
+.desktop .worldTitle {
+  top: 87px;
+  left: 24px;
+  width: min(305px, 29vw);
+  transform: none;
+  padding: 16px 20px;
+  border: 1px solid #fffdf4;
+  border-radius: 18px;
+  text-align: left;
+  text-shadow: none;
+}
+
+.desktop .worldTitle :is(h1, p, .eyebrow, .progressLine, b) {
+  color: var(--ink);
+}
+
+.desktop .worldTitle h1 {
+  font-size: clamp(22px, 2.2vw, 33px);
+}
+
+.desktop .progressLine {
+  max-width: none;
+}
+
+.desktop .progressLine > span {
+  display: inline;
+}
+
+.desktop .quest,
+.desktop .returnCurrent {
+  bottom: 24px;
+  left: 24px;
+  transform: none;
+  z-index: 3;
+}
+
+.desktop .quest {
+  width: min(385px, 38vw);
+}
+
+.desktop .quest button,
+.desktop .returnCurrent {
+  background: #4c673c;
+  box-shadow: 0 3px 0 #304728;
+}
+
+.desktop .locate {
+  right: 24px;
+  bottom: 24px;
+  color: var(--ink);
+}
+
+.desktop[data-desktop-valley] .quest,
+.desktop[data-desktop-valley] .returnCurrent {
+  right: 82px;
+  left: auto;
+}
