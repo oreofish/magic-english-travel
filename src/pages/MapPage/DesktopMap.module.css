@@ -337,3 +337,66 @@
     transform: rotate(-62deg);
   }
 }
+
+/* Sea stops are bubbles; they keep the existing lesson and lock behaviour. */
+.sea .storyRoute {
+  display: none;
+}
+.sea .balloon {
+  border: 2px solid #d8fbff;
+  background: radial-gradient(circle at 28% 22%, #ffffffe6 0 7%, #a2eaff77 15%, #187d9b99 65%);
+  box-shadow:
+    inset -3px -4px 8px #05486566,
+    0 0 12px #a7e9ff66;
+  color: #f4ffff;
+  font-size: 14px;
+  font-weight: 800;
+}
+.sea .balloon::after {
+  display: none;
+}
+.sea .pin[data-unlocked='true'] .balloon {
+  border-color: #fff2ad;
+  color: #fff8cf;
+}
+.sea .pinLabel {
+  background: #064a65ee;
+}
+.sea .dot {
+  background: #8ae4ef;
+  border-color: #e0fbff;
+}
+.seaBubbles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.seaBubbles i {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 1px solid #d1faffbb;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, #fff9, transparent 50%);
+  opacity: 0.5;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .seaBubbles i {
+    animation: sea-bubble-rise 12s ease-in-out infinite;
+  }
+}
+@keyframes sea-bubble-rise {
+  0% {
+    opacity: 0;
+    transform: translate(0, 25px) scale(0.6);
+  }
+  20%,
+  70% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(18px, -100px) scale(1.2);
+  }
+}

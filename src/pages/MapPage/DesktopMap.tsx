@@ -64,6 +64,28 @@ interface IllustratedMap {
 }
 
 const illustratedMaps: Partial<Record<number, IllustratedMap>> = {
+  3: {
+    image: 'desktop-shimmering-sea.webp',
+    coordinates: [
+      [7.3, 75],
+      [13, 71],
+      [19, 66],
+      [25, 63],
+      [31, 65],
+      [37, 68],
+      [43, 68],
+      [49, 64],
+      [55, 56],
+      [62, 51],
+      [68, 52.5],
+      [74, 55],
+      [80, 54],
+      [87, 48],
+      [94, 42],
+    ],
+    landmarks: {},
+    direction: '沿海底气泡小路前进',
+  },
   2: {
     image: 'desktop-echo-valley.webp',
     imageSources: [
@@ -136,7 +158,7 @@ export default function DesktopMap({
     <div
       id="adventure-map"
       tabIndex={0}
-      className={`${styles.map} ${overview ? styles.atlas : ''}`}
+      className={`${styles.map} ${overview ? styles.atlas : !overview && region === 3 ? styles.sea : ''}`}
       style={{ '--terrain': world.sky, '--terrain-shade': world.color } as CSSProperties}
       aria-label={
         overview
@@ -166,6 +188,20 @@ export default function DesktopMap({
         </svg>
       )}
       {!overview && region === 2 && <EchoValleyScenery />}
+      {!overview && region === 3 && (
+        <div className={styles.seaBubbles} aria-hidden="true">
+          {[12, 29, 53, 76, 91].map((left, index) => (
+            <i
+              key={left}
+              style={{
+                left: `${left}%`,
+                top: `${82 - index * 6}%`,
+                animationDelay: `${-index * 2}s`,
+              }}
+            />
+          ))}
+        </div>
+      )}
       {!overview && (
         <svg
           className={styles.road}
@@ -231,7 +267,7 @@ export default function DesktopMap({
                   </span>
                   {!node.completed && (
                     <span className={styles.balloon} aria-hidden="true">
-                      <Crown size={17} />
+                      {region === 3 && !node.isLevelEnd ? index + 1 : <Crown size={17} />}
                       {!node.unlocked && <LockKeyhole size={10} className={styles.lock} />}
                     </span>
                   )}

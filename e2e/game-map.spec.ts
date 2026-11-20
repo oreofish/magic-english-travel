@@ -2,6 +2,37 @@ import { test, expect } from '@playwright/test';
 
 const root = '/magic-english-buddy/';
 
+test('shimmering sea uses underwater bubble stops and preserves locked previews', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await start(page);
+  await page.getByRole('button', { name: '查看总地图' }).click();
+  await page.getByRole('button', { name: 'LEVEL 3 闪耀之海，未解锁，可预览' }).click();
+  const art = page.locator('#adventure-map img');
+  await expect(art).toHaveAttribute('src', /desktop-shimmering-sea\.webp$/);
+  await expect
+    .poll(() => art.evaluate(el => (el as HTMLImageElement).naturalWidth))
+    .toBeGreaterThan(0);
+  const stops = page.getByRole('list', { name: '故事关卡' }).getByRole('button');
+  await expect(stops).toHaveCount(15);
+  for (const stop of await stops.all()) {
+    await expect(stop).toBeInViewport();
+    const bounds = await stop.boundingBox();
+    expect(bounds!.y).toBeGreaterThan(900 * 0.3);
+  }
+  await page.screenshot({ path: 'docs/ux-evidence/shimmering-sea-desktop.png', scale: 'css' });
+  await page.getByTestId('map-node-l3_001').click();
+  await expect(page.getByRole('dialog')).toContainText('先完成');
+  await page.getByRole('button', { name: '关闭', exact: true }).click();
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: 360, height: 780 });
+  await expect(page.getByRole('heading', { name: '闪耀之海', exact: true })).toBeVisible();
+  await expect(page.locator('#adventure-map img')).toHaveCount(0);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await expect(art).toHaveAttribute('src', /desktop-shimmering-sea\.webp$/);
+});
+
 async function start(page: import('@playwright/test').Page) {
   await page.goto(root);
   await page.getByRole('button', { name: '直接开始，一起学英语' }).click();
