@@ -1,3 +1,4 @@
+import { EmojiIllustration } from '@/components/common/EmojiIllustration';
 /**
  * BuddyAvatar 组件
  * Buddy 头像显示，支持不同阶段和心情
@@ -106,7 +107,7 @@ export const BuddyAvatar = memo<BuddyAvatarProps>(({
         whileTap={onClick ? 'tap' : undefined}
       >
         {/* 主头像 */}
-        <span className={styles.mainEmoji}>{config.avatar}</span>
+        <span className={styles.mainEmoji}><EmojiIllustration>{config.avatar}</EmojiIllustration></span>
         
         {/* 心情指示器 */}
         <motion.div
@@ -115,7 +116,7 @@ export const BuddyAvatar = memo<BuddyAvatarProps>(({
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
         >
-          {moodConfig.emoji}
+          <EmojiIllustration>{moodConfig.emoji}</EmojiIllustration>
         </motion.div>
       </motion.div>
 

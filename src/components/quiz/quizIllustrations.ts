@@ -1,5 +1,6 @@
-// Legacy lesson data names image files that were never shipped. Use bundled
-// Unicode illustrations for those assets; always keep the answer's text visible.
+import assets from '@/data/emojiAssets.json';
+
+// Resolve legacy filenames as well as emoji-valued lessons to local illustrations.
 const legacyIllustrations: Record<string, string> = {
   bird_singing: '🐦🎵',
   bird_flying: '🐦🪽',
@@ -29,4 +30,9 @@ export function getQuizEmoji(image?: string): string | undefined {
     return legacyIllustrations[name];
   }
   return image;
+}
+
+export function getQuizIllustrationFiles(image?: string): string[] | undefined {
+  const illustration = getQuizEmoji(image);
+  return illustration ? (assets as Record<string, string[]>)[illustration] : undefined;
 }

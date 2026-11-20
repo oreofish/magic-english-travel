@@ -16,6 +16,10 @@
 }
 
 .title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
   font-size: var(--text-xl);
   font-weight: var(--font-bold);
   color: var(--text-light);
@@ -81,10 +85,6 @@
   }
 }
 
-.playIcon {
-  font-size: 28px;
-}
-
 .playText {
   font-weight: var(--font-medium);
 }
@@ -148,6 +148,9 @@
 }
 
 .hintBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
   font-size: var(--text-sm);
   color: var(--text-muted);

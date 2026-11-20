@@ -1,3 +1,4 @@
+import { EmojiIllustration } from '@/components/common/EmojiIllustration';
 /**
  * QuizFeedback 组件
  * 正确/错误反馈动画
@@ -32,7 +33,7 @@ export const QuizFeedback: React.FC<QuizFeedbackProps> = ({
         animate={{ scale: 1, rotate: 0 }}
         transition={{ delay: 0.1, type: 'spring', stiffness: 400 }}
       >
-        {isCorrect ? '🎉' : '😅'}
+        <EmojiIllustration>{isCorrect ? '🎉' : '😅'}</EmojiIllustration>
       </motion.div>
 
       {/* 标题 */}
@@ -52,7 +53,13 @@ export const QuizFeedback: React.FC<QuizFeedbackProps> = ({
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.3 }}
       >
-        {isCorrect ? '你的魔力值 +3 ✨' : `正确答案是：${correctAnswer}`}
+        {isCorrect ? (
+          <>
+            你的魔力值 +3 <EmojiIllustration>✨</EmojiIllustration>
+          </>
+        ) : (
+          `正确答案是：${correctAnswer}`
+        )}
       </motion.p>
 
       {/* 粒子效果 (仅正确时) */}
@@ -78,7 +85,7 @@ export const QuizFeedback: React.FC<QuizFeedbackProps> = ({
                 delay: Math.random() * 0.3,
               }}
             >
-              {['⭐', '✨', '💫', '🌟'][i % 4]}
+              <EmojiIllustration>{['⭐', '✨', '💫', '🌟'][i % 4]!}</EmojiIllustration>
             </motion.div>
           ))}
         </div>

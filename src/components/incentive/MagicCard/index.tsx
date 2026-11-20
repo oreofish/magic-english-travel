@@ -1,3 +1,4 @@
+import { EmojiIllustration } from '@/components/common/EmojiIllustration';
 /**
  * MagicCard 组件
  * 魔法卡牌（单词卡）展示
@@ -97,13 +98,15 @@ export const MagicCard = memo<MagicCardProps>(
           >
             {/* 稀有度标识 */}
             <div className={styles.rarityBadge}>
-              {rarity === 'gold' && '⭐'}
-              {rarity === 'blue' && '💎'}
-              {rarity === 'green' && '🌟'}
+              {rarity === 'gold' && <EmojiIllustration>⭐</EmojiIllustration>}
+              {rarity === 'blue' && <EmojiIllustration>💎</EmojiIllustration>}
+              {rarity === 'green' && <EmojiIllustration>🌟</EmojiIllustration>}
             </div>
 
             {/* 表情 */}
-            <div className={styles.emoji}>{emoji || '📝'}</div>
+            <div className={styles.emoji}>
+              <EmojiIllustration>{emoji || '📝'}</EmojiIllustration>
+            </div>
 
             {/* 单词 */}
             <span className={styles.word} style={{ fontSize: sizeStyle.fontSize }}>

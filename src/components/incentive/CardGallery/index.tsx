@@ -1,3 +1,4 @@
+import { EmojiIllustration } from '@/components/common/EmojiIllustration';
 /**
  * CardGallery 组件
  * 卡牌图鉴展示页面
@@ -52,10 +53,13 @@ export const CardGallery: React.FC<CardGalleryProps> = ({
   });
 
   // 统计各稀有度数量
-  const rarityStats = cards.reduce((acc, card) => {
-    acc[card.rarity] = (acc[card.rarity] || 0) + 1;
-    return acc;
-  }, {} as Record<CardRarity, number>);
+  const rarityStats = cards.reduce(
+    (acc, card) => {
+      acc[card.rarity] = (acc[card.rarity] || 0) + 1;
+      return acc;
+    },
+    {} as Record<CardRarity, number>
+  );
 
   const filterOptions: Array<{ value: FilterType; label: string; count: number }> = [
     { value: 'all', label: '全部', count: cards.length },
@@ -70,7 +74,9 @@ export const CardGallery: React.FC<CardGalleryProps> = ({
       {/* 收集进度 */}
       <div className={styles.progressSection}>
         <div className={styles.progressHeader}>
-          <span className={styles.progressTitle}>📚 收集进度</span>
+          <span className={styles.progressTitle}>
+            <EmojiIllustration>{'📚'}</EmojiIllustration> 收集进度
+          </span>
           <span className={styles.progressCount}>
             {cards.length} / {totalCards}
           </span>
@@ -94,9 +100,10 @@ export const CardGallery: React.FC<CardGalleryProps> = ({
               className={`${styles.filterTab} ${filter === option.value ? styles.active : ''}`}
               onClick={() => setFilter(option.value)}
               style={{
-                borderColor: option.value !== 'all' 
-                  ? RARITY_CONFIG[option.value as CardRarity]?.color 
-                  : undefined,
+                borderColor:
+                  option.value !== 'all'
+                    ? RARITY_CONFIG[option.value as CardRarity]?.color
+                    : undefined,
               }}
             >
               <span>{option.label}</span>
@@ -108,7 +115,7 @@ export const CardGallery: React.FC<CardGalleryProps> = ({
         <select
           className={styles.sortSelect}
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+          onChange={e => setSortBy(e.target.value as typeof sortBy)}
         >
           <option value="recent">最近获得</option>
           <option value="rarity">按稀有度</option>
@@ -137,9 +144,7 @@ export const CardGallery: React.FC<CardGalleryProps> = ({
                 masteryLevel={card.masteryLevel}
                 size="sm"
               />
-              {card.isNew && (
-                <div className={styles.newBadge}>NEW</div>
-              )}
+              {card.isNew && <div className={styles.newBadge}>NEW</div>}
             </motion.div>
           ))}
         </AnimatePresence>
@@ -147,7 +152,9 @@ export const CardGallery: React.FC<CardGalleryProps> = ({
         {/* 空位占位 */}
         {Array.from({ length: Math.max(0, 8 - sortedCards.length) }).map((_, i) => (
           <div key={`empty-${i}`} className={styles.emptySlot}>
-            <span className={styles.emptyIcon}>❓</span>
+            <span className={styles.emptyIcon}>
+              <EmojiIllustration>{'❓'}</EmojiIllustration>
+            </span>
           </div>
         ))}
       </div>
@@ -155,7 +162,9 @@ export const CardGallery: React.FC<CardGalleryProps> = ({
       {/* 空状态 */}
       {sortedCards.length === 0 && filter !== 'all' && (
         <div className={styles.emptyState}>
-          <span className={styles.emptyEmoji}>🔍</span>
+          <span className={styles.emptyEmoji}>
+            <EmojiIllustration>{'🔍'}</EmojiIllustration>
+          </span>
           <p>还没有{filterOptions.find(f => f.value === filter)?.label}卡牌</p>
           <p className={styles.emptyHint}>继续学习来获得更多卡牌！</p>
         </div>
@@ -165,4 +174,3 @@ export const CardGallery: React.FC<CardGalleryProps> = ({
 };
 
 export default CardGallery;
-

@@ -1,3 +1,4 @@
+import { EmojiIllustration } from '@/components/common/EmojiIllustration';
 /**
  * SentenceOrder 组件
  * 句子排序题型 - 拖拽单词组成句子
@@ -76,7 +77,9 @@ export const SentenceOrder: React.FC<SentenceOrderProps> = ({
     <div className={styles.container}>
       {/* 题目区域 */}
       <div className={styles.questionSection}>
-        <h2 className={styles.title}>📝 排一排</h2>
+        <h2 className={styles.title}>
+          <EmojiIllustration>{'📝'}</EmojiIllustration> 排一排
+        </h2>
         <p className={styles.instruction}>{question.question}</p>
       </div>
 
@@ -101,7 +104,9 @@ export const SentenceOrder: React.FC<SentenceOrderProps> = ({
           ))}
         </Reorder.Group>
 
-        <p className={styles.dragHint}>👆 拖拽单词调整顺序</p>
+        <p className={styles.dragHint}>
+          <EmojiIllustration>{'👆'}</EmojiIllustration> 拖拽单词调整顺序
+        </p>
       </div>
 
       {/* 预览句子 */}
@@ -117,7 +122,8 @@ export const SentenceOrder: React.FC<SentenceOrderProps> = ({
           onClick={handleHint}
           disabled={hintUsed || hintRequestedRef.current}
         >
-          {hintUsed || hintRequestedRef.current ? '💡 已使用提示' : '💡 提示 (-5 MP)'}
+          <EmojiIllustration>💡</EmojiIllustration>
+          {hintUsed || hintRequestedRef.current ? '已使用提示' : '提示 (-5 MP)'}
         </button>
         <motion.button
           className={styles.submitBtn}

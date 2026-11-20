@@ -1,3 +1,7 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { allStories } from '@/data';
+import { getQuizEmoji, getQuizIllustrationFiles } from '@/components/quiz/quizIllustrations';
 import { fireEvent, render, screen } from '../../utils/render';
 import { describe, expect, it, vi } from 'vitest';
 import { WordBuilder } from '@/components/quiz/WordBuilder';
@@ -5,6 +9,35 @@ import { ImageChoice } from '@/components/quiz/ImageChoice';
 import { SentenceOrder } from '@/components/quiz/SentenceOrder';
 
 describe('quiz content fallbacks', () => {
+  it('bundles a real SVG for every option illustration and spelling image hint in the course', () => {
+    const illustrations = allStories
+      .flatMap(story =>
+        story.quiz.flatMap(question => [
+          ...(question.options ?? []).map(option => option.image),
+          ...(question.type === 'word_builder' ? [question.audioQuestion] : []),
+        ])
+      )
+      .filter(image => !!getQuizEmoji(image));
+    expect(illustrations.length).toBeGreaterThan(100);
+    for (const image of illustrations) {
+      const files = getQuizIllustrationFiles(image);
+      expect(files?.length, image).toBeGreaterThan(0);
+      for (const file of files ?? []) {
+        const path = resolve('public/images/quiz', file);
+        expect(existsSync(path), image).toBe(true);
+        expect(readFileSync(path, 'utf8'), file).toContain('<svg');
+      }
+    }
+  });
+
+  it('renders compound legacy illustrations as separate local graphics', () => {
+    expect(getQuizIllustrationFiles('/assets/quiz/bird_singing.webp')).toEqual([
+      '1f426.svg',
+      '1f3b5.svg',
+    ]);
+    expect(getQuizIllustrationFiles('/audio/question.mp3')).toBeUndefined();
+  });
+
   it('renders legacy missing images as illustrations, preserving the answer text', () => {
     render(
       <ImageChoice
@@ -19,7 +52,12 @@ describe('quiz content fallbacks', () => {
         onHint={vi.fn()}
       />
     );
-    expect(screen.getByRole('button', { name: 'owl', exact: true })).toHaveTextContent('🦉');
+    const answer = screen.getByRole('button', { name: 'owl', exact: true });
+    expect(answer.querySelector('img')).toHaveAttribute(
+      'src',
+      expect.stringMatching(/images\/quiz\/1f989\.svg$/)
+    );
+    expect(answer).toHaveTextContent('owl');
     expect(screen.queryByText('/assets/quiz/owl.webp')).not.toBeInTheDocument();
   });
 

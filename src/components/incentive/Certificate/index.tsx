@@ -1,3 +1,4 @@
+import { EmojiIllustration } from '@/components/common/EmojiIllustration';
 /** A shareable learning-milestone certificate. */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -103,7 +104,7 @@ export const Certificate: React.FC<CertificateProps> = ({
           <span className={styles.cornerBL}>✦</span><span className={styles.cornerBR}>✦</span>
         </div>
         <header className={styles.header}>
-          <span className={styles.badge} aria-hidden="true">📚</span>
+          <span className={styles.badge} aria-hidden="true"><EmojiIllustration>{"📚"}</EmojiIllustration></span>
           <p className={styles.kicker}>MAGIC ENGLISH BUDDY</p>
           <h1 className={styles.title}>学习里程碑证书</h1>
           <p className={styles.subtitle}>LEARNING MILESTONE</p>
@@ -115,10 +116,10 @@ export const Certificate: React.FC<CertificateProps> = ({
           <p className={styles.achievement}>已完成 {storiesCompleted} 节课程，留下了认真学习的足迹。</p>
         </div>
         <div className={styles.stats} aria-label="本档案学习统计">
-          <div className={styles.statItem}><span aria-hidden="true">⭐</span><strong>L{level}</strong><small>当前等级</small></div>
-          <div className={styles.statItem}><span aria-hidden="true">📖</span><strong>{storiesCompleted}</strong><small>完成课程</small></div>
-          <div className={styles.statItem}><span aria-hidden="true">✨</span><strong>{magicPower}</strong><small>魔力值</small></div>
-          <div className={styles.statItem}><span aria-hidden="true">🔥</span><strong>{streakDays}</strong><small>连续学习天数</small></div>
+          <div className={styles.statItem}><span aria-hidden="true"><EmojiIllustration>{"⭐"}</EmojiIllustration></span><strong>L{level}</strong><small>当前等级</small></div>
+          <div className={styles.statItem}><span aria-hidden="true"><EmojiIllustration>{"📖"}</EmojiIllustration></span><strong>{storiesCompleted}</strong><small>完成课程</small></div>
+          <div className={styles.statItem}><span aria-hidden="true"><EmojiIllustration>{"✨"}</EmojiIllustration></span><strong>{magicPower}</strong><small>魔力值</small></div>
+          <div className={styles.statItem}><span aria-hidden="true"><EmojiIllustration>{"🔥"}</EmojiIllustration></span><strong>{streakDays}</strong><small>连续学习天数</small></div>
         </div>
         <footer className={styles.footer}>
           <div className={styles.seal} aria-hidden="true"><span>✦</span><small>LEARN</small></div>
@@ -126,7 +127,7 @@ export const Certificate: React.FC<CertificateProps> = ({
         </footer>
       </div>
       <div className={styles.actions}>
-        <button className={styles.secondaryAction} type="button" onClick={handlePrint} disabled={isSaving}>🖨️ 打印证书</button>
+        <button className={styles.secondaryAction} type="button" onClick={handlePrint} disabled={isSaving}><EmojiIllustration>{"🖨️"}</EmojiIllustration> 打印证书</button>
         <button className={styles.primaryAction} type="button" onClick={() => void handleSaveAsImage()} disabled={isSaving}>
           {isSaving ? '正在生成图片…' : '💾 保存 PNG'}
         </button>

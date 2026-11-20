@@ -1,3 +1,4 @@
+import { EmojiIllustration } from '@/components/common/EmojiIllustration';
 /**
  * 成长记录：展示当前用户在本设备上的真实学习数据。
  */
@@ -12,7 +13,11 @@ import { BuddyAvatar } from '@/components/buddy';
 import AppShell from '@/components/common/AppShell';
 import { getBuddyState, type BuddyState, checkEvolution, evolve } from '@/services/buddyService';
 import { getUserCards, type CardData } from '@/services/cardCollectionService';
-import { ACHIEVEMENTS, claimAchievementReward, getUserAchievements } from '@/services/achievementService';
+import {
+  ACHIEVEMENTS,
+  claimAchievementReward,
+  getUserAchievements,
+} from '@/services/achievementService';
 import { dictionaryService } from '@/services/dictionaryService';
 import { getUserMapNodes } from '@/services/mapProgressService';
 import { getEffectiveStreak } from '@/services/learningActivityService';
@@ -92,7 +97,11 @@ const ScrollPage: React.FC = () => {
         })
         .sort((a, b) => b.obtainedAt - a.obtainedAt);
 
-      if (request !== loadRequestRef.current || useAppStore.getState().currentUserId !== currentUserId) return;
+      if (
+        request !== loadRequestRef.current ||
+        useAppStore.getState().currentUserId !== currentUserId
+      )
+        return;
       setData({
         user,
         progress: progress || null,
@@ -104,7 +113,9 @@ const ScrollPage: React.FC = () => {
         },
         cards,
         achievements,
-        completedCourses: new Set(nodes.filter(node => node.completed && node.storyId).map(node => node.storyId)).size,
+        completedCourses: new Set(
+          nodes.filter(node => node.completed && node.storyId).map(node => node.storyId)
+        ).size,
       });
     } catch (loadError) {
       console.error('加载成长记录失败:', loadError);
@@ -207,22 +218,30 @@ const ScrollPage: React.FC = () => {
 
         <section className={styles.statsGrid} aria-label="学习统计">
           <div className={styles.statCard}>
-            <span aria-hidden="true">⭐</span>
+            <span aria-hidden="true">
+              <EmojiIllustration>{'⭐'}</EmojiIllustration>
+            </span>
             <strong>L{progress?.level || 1}</strong>
             <small>当前等级</small>
           </div>
           <div className={styles.statCard}>
-            <span aria-hidden="true">✨</span>
+            <span aria-hidden="true">
+              <EmojiIllustration>{'✨'}</EmojiIllustration>
+            </span>
             <strong>{progress?.magicPower || 0}</strong>
             <small>魔力值</small>
           </div>
           <div className={styles.statCard}>
-            <span aria-hidden="true">📖</span>
+            <span aria-hidden="true">
+              <EmojiIllustration>{'📖'}</EmojiIllustration>
+            </span>
             <strong>{data?.completedCourses || 0}</strong>
             <small>完成课程</small>
           </div>
           <div className={styles.statCard}>
-            <span aria-hidden="true">🔥</span>
+            <span aria-hidden="true">
+              <EmojiIllustration>{'🔥'}</EmojiIllustration>
+            </span>
             <strong>{progress ? getEffectiveStreak(progress) : 0}</strong>
             <small>连续学习</small>
           </div>
@@ -231,7 +250,11 @@ const ScrollPage: React.FC = () => {
           <div>
             <p className={styles.eyebrow}>当前档案</p>
             <h2>学习里程碑证书</h2>
-            <p>{data?.completedCourses ? `已完成 ${data.completedCourses} 节课程，可以生成一份本地学习记录。` : '完成第一节课程后，可以在这里生成学习里程碑证书。'}</p>
+            <p>
+              {data?.completedCourses
+                ? `已完成 ${data.completedCourses} 节课程，可以生成一份本地学习记录。`
+                : '完成第一节课程后，可以在这里生成学习里程碑证书。'}
+            </p>
           </div>
           <Link to="/certificate" className={styles.certificateLink}>
             {data?.completedCourses ? '查看证书' : '去学习'}
@@ -250,7 +273,9 @@ const ScrollPage: React.FC = () => {
         </div>
         <span className={styles.countBadge}>{data?.cards.length || 0} 张</span>
       </div>
-      <Link to="/review" className={styles.reviewLink}>复习收藏的单词 →</Link>
+      <Link to="/review" className={styles.reviewLink}>
+        复习收藏的单词 →
+      </Link>
       {data?.cards.length ? (
         <div className={styles.cardsGrid}>
           {data.cards.map((card, index) => (
@@ -375,13 +400,19 @@ const ScrollPage: React.FC = () => {
               aria-pressed={activeTab === tab.id}
               type="button"
             >
-              <span aria-hidden="true">{tab.icon}</span>
+              <span aria-hidden="true">
+                <EmojiIllustration>{tab.icon}</EmojiIllustration>
+              </span>
               {tab.label}
             </button>
           ))}
         </div>
         <div className={styles.content}>{renderContent()}</div>
-        {actionMessage && <p className={styles.helpText} role="status">{actionMessage}</p>}
+        {actionMessage && (
+          <p className={styles.helpText} role="status">
+            {actionMessage}
+          </p>
+        )}
       </div>
     </AppShell>
   );
@@ -396,7 +427,7 @@ const EmptyState: React.FC<{
 }> = ({ icon, title, description, action, onAction }) => (
   <section className={styles.emptyState}>
     <span className={styles.emptyIcon} aria-hidden="true">
-      {icon}
+      <EmojiIllustration>{icon}</EmojiIllustration>
     </span>
     <h2>{title}</h2>
     <p>{description}</p>

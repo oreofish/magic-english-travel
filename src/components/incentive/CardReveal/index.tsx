@@ -1,3 +1,4 @@
+import { EmojiIllustration } from '@/components/common/EmojiIllustration';
 /**
  * CardReveal 组件
  * 卡牌揭示/开包动画
@@ -22,11 +23,7 @@ interface CardRevealProps {
 
 type RevealPhase = 'glow' | 'flip' | 'reveal' | 'complete';
 
-export const CardReveal: React.FC<CardRevealProps> = ({
-  card,
-  onClose,
-  isNew = true,
-}) => {
+export const CardReveal: React.FC<CardRevealProps> = ({ card, onClose, isNew = true }) => {
   const [phase, setPhase] = useState<RevealPhase>('glow');
   const config = RARITY_CONFIG[card.rarity];
 
@@ -52,7 +49,9 @@ export const CardReveal: React.FC<CardRevealProps> = ({
           {(phase === 'reveal' || phase === 'complete') && (
             <motion.div
               className={styles.bgGlow}
-              style={{ background: `radial-gradient(circle, ${config.color}40 0%, transparent 70%)` }}
+              style={{
+                background: `radial-gradient(circle, ${config.color}40 0%, transparent 70%)`,
+              }}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 3, opacity: 1 }}
               transition={{ duration: 0.8 }}
@@ -100,7 +99,9 @@ export const CardReveal: React.FC<CardRevealProps> = ({
                 onClick={handleReveal}
               >
                 <div className={styles.packGlow} />
-                <div className={styles.packIcon}>🎁</div>
+                <div className={styles.packIcon}>
+                  <EmojiIllustration>{'🎁'}</EmojiIllustration>
+                </div>
                 <p className={styles.packText}>点击开启</p>
               </motion.div>
             )}
@@ -110,10 +111,10 @@ export const CardReveal: React.FC<CardRevealProps> = ({
                 key="card"
                 className={styles.cardWrapper}
                 initial={{ scale: 0.5, rotateY: -90, opacity: 0 }}
-                animate={{ 
-                  scale: phase === 'complete' ? 1 : 1.2, 
-                  rotateY: 0, 
-                  opacity: 1 
+                animate={{
+                  scale: phase === 'complete' ? 1 : 1.2,
+                  rotateY: 0,
+                  opacity: 1,
                 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 20 }}
               >
@@ -142,15 +143,19 @@ export const CardReveal: React.FC<CardRevealProps> = ({
             >
               {isNew ? (
                 <>
-                  <div className={styles.newBadge}>✨ 新卡牌！</div>
+                  <div className={styles.newBadge}>
+                    <EmojiIllustration>{'✨'}</EmojiIllustration> 新卡牌！
+                  </div>
                   <h2 className={styles.rarityTitle} style={{ color: config.color }}>
                     {config.nameCn}
                   </h2>
                 </>
               ) : (
-                <div className={styles.upgradeBadge}>⬆️ 掌握度提升！</div>
+                <div className={styles.upgradeBadge}>
+                  <EmojiIllustration>{'⬆️'}</EmojiIllustration> 掌握度提升！
+                </div>
               )}
-              
+
               <p className={styles.cardWord}>{card.word}</p>
               <p className={styles.cardMeaning}>{card.meaningCn}</p>
 
@@ -166,4 +171,3 @@ export const CardReveal: React.FC<CardRevealProps> = ({
 };
 
 export default CardReveal;
-

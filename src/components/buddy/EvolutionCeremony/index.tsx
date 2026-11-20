@@ -1,3 +1,4 @@
+import { EmojiIllustration } from '@/components/common/EmojiIllustration';
 /**
  * EvolutionCeremony 组件
  * Buddy 进化仪式动画
@@ -27,7 +28,9 @@ export const EvolutionCeremony: React.FC<EvolutionCeremonyProps> = ({
   onCancel,
 }) => {
   const [phase, setPhase] = useState<CeremonyPhase>('ready');
-  const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; delay: number }>>([]);
+  const [particles, setParticles] = useState<
+    Array<{ id: number; x: number; y: number; delay: number }>
+  >([]);
 
   const currentConfig = EVOLUTION_CONFIG[currentStage];
   const nextConfig = EVOLUTION_CONFIG[nextStage];
@@ -46,15 +49,15 @@ export const EvolutionCeremony: React.FC<EvolutionCeremonyProps> = ({
   // 开始进化
   const handleStartEvolution = useCallback(async () => {
     setPhase('charging');
-    
+
     // 蓄力阶段
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
+
     setPhase('evolving');
-    
+
     // 执行进化
     const success = await evolve(userId);
-    
+
     if (success) {
       await new Promise(resolve => setTimeout(resolve, 2000));
       setPhase('complete');
@@ -90,7 +93,7 @@ export const EvolutionCeremony: React.FC<EvolutionCeremonyProps> = ({
           <motion.div
             className={styles.aura}
             initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ 
+            animate={{
               scale: phase === 'evolving' ? [1, 2, 3] : [1, 1.2, 1],
               opacity: phase === 'evolving' ? [0.8, 0.4, 0] : [0.5, 0.8, 0.5],
             }}
@@ -115,7 +118,9 @@ export const EvolutionCeremony: React.FC<EvolutionCeremonyProps> = ({
               exit={{ scale: 0, opacity: 0 }}
               transition={{ duration: phase === 'evolving' ? 1 : 0.5 }}
             >
-              <span className={styles.emoji}>{currentConfig.avatar}</span>
+              <span className={styles.emoji}>
+                <EmojiIllustration>{currentConfig.avatar}</EmojiIllustration>
+              </span>
             </motion.div>
           ) : (
             <motion.div
@@ -125,7 +130,9 @@ export const EvolutionCeremony: React.FC<EvolutionCeremonyProps> = ({
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: 'spring', stiffness: 200, damping: 15 }}
             >
-              <span className={styles.emoji}>{nextConfig.avatar}</span>
+              <span className={styles.emoji}>
+                <EmojiIllustration>{nextConfig.avatar}</EmojiIllustration>
+              </span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -141,7 +148,9 @@ export const EvolutionCeremony: React.FC<EvolutionCeremonyProps> = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
             >
-              <h2 className={styles.title}>🌟 进化准备</h2>
+              <h2 className={styles.title}>
+                <EmojiIllustration>{'🌟'}</EmojiIllustration> 进化准备
+              </h2>
               <p className={styles.description}>
                 {currentConfig.nameCn} 即将进化为 {nextConfig.nameCn}！
               </p>
@@ -150,7 +159,7 @@ export const EvolutionCeremony: React.FC<EvolutionCeremonyProps> = ({
                   稍后再说
                 </Button>
                 <Button variant="primary" onClick={handleStartEvolution}>
-                  ✨ 开始进化
+                  <EmojiIllustration>{'✨'}</EmojiIllustration> 开始进化
                 </Button>
               </div>
             </motion.div>
@@ -164,7 +173,9 @@ export const EvolutionCeremony: React.FC<EvolutionCeremonyProps> = ({
               exit={{ opacity: 0 }}
               className={styles.chargingText}
             >
-              <h2 className={styles.title}>⚡ 魔力聚集中...</h2>
+              <h2 className={styles.title}>
+                <EmojiIllustration>{'⚡'}</EmojiIllustration> 魔力聚集中...
+              </h2>
               <div className={styles.chargingBar}>
                 <motion.div
                   className={styles.chargingFill}
@@ -184,7 +195,9 @@ export const EvolutionCeremony: React.FC<EvolutionCeremonyProps> = ({
               exit={{ opacity: 0 }}
               className={styles.evolvingText}
             >
-              <h2 className={styles.title}>🔮 进化中！</h2>
+              <h2 className={styles.title}>
+                <EmojiIllustration>{'🔮'}</EmojiIllustration> 进化中！
+              </h2>
             </motion.div>
           )}
 
@@ -195,7 +208,9 @@ export const EvolutionCeremony: React.FC<EvolutionCeremonyProps> = ({
               animate={{ opacity: 1, y: 0 }}
               className={styles.completeSection}
             >
-              <h2 className={styles.successTitle}>🎉 进化成功！</h2>
+              <h2 className={styles.successTitle}>
+                <EmojiIllustration>{'🎉'}</EmojiIllustration> 进化成功！
+              </h2>
               <p className={styles.newName}>{nextConfig.nameCn}</p>
               <p className={styles.description}>{nextConfig.description}</p>
               <Button variant="primary" onClick={onComplete}>
@@ -210,4 +225,3 @@ export const EvolutionCeremony: React.FC<EvolutionCeremonyProps> = ({
 };
 
 export default EvolutionCeremony;
-

@@ -1,3 +1,4 @@
+import { EmojiIllustration } from '@/components/common/EmojiIllustration';
 /**
  * QuizResult 组件
  * Quiz 结果统计页面
@@ -48,7 +49,9 @@ export const QuizResult: React.FC<QuizResultProps> = ({
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
       >
-        <span className={styles.emoji}>{grade.emoji}</span>
+        <span className={styles.emoji}>
+          <EmojiIllustration>{grade.emoji}</EmojiIllustration>
+        </span>
         <h1 className={styles.title} style={{ color: grade.color }}>
           {grade.text}
         </h1>
@@ -101,19 +104,25 @@ export const QuizResult: React.FC<QuizResultProps> = ({
         transition={{ delay: 0.4 }}
       >
         <div className={styles.statItem}>
-          <span className={styles.statIcon}>✅</span>
+          <span className={styles.statIcon}>
+            <EmojiIllustration>{'✅'}</EmojiIllustration>
+          </span>
           <span className={styles.statValue}>{result.correctCount}</span>
           <span className={styles.statLabel}>正确</span>
         </div>
         <div className={styles.statDivider} />
         <div className={styles.statItem}>
-          <span className={styles.statIcon}>❌</span>
+          <span className={styles.statIcon}>
+            <EmojiIllustration>{'❌'}</EmojiIllustration>
+          </span>
           <span className={styles.statValue}>{result.wrongCount}</span>
           <span className={styles.statLabel}>错误</span>
         </div>
         <div className={styles.statDivider} />
         <div className={styles.statItem}>
-          <span className={styles.statIcon}>⏱️</span>
+          <span className={styles.statIcon}>
+            <EmojiIllustration>{'⏱️'}</EmojiIllustration>
+          </span>
           <span className={styles.statValue}>{result.timeSpent}s</span>
           <span className={styles.statLabel}>用时</span>
         </div>
@@ -126,14 +135,22 @@ export const QuizResult: React.FC<QuizResultProps> = ({
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.6 }}
       >
-        <span className={styles.rewardIcon}>✨</span>
+        <span className={styles.rewardIcon}>
+          <EmojiIllustration>{'✨'}</EmojiIllustration>
+        </span>
         <span className={styles.rewardText}>
           {isReview ? (
             '复习结果保存后，本次不会重复发放奖励'
           ) : isPassed ? (
-            <>保存本次通关后可获得 <strong>{result.earnedMagicPower + storyRewardMagicPower}</strong> 魔力值</>
+            <>
+              保存本次通关后可获得{' '}
+              <strong>{result.earnedMagicPower + storyRewardMagicPower}</strong> 魔力值
+            </>
           ) : (
-            <>及格并保存后可获得 <strong>{result.earnedMagicPower + storyRewardMagicPower}</strong> 魔力值</>
+            <>
+              及格并保存后可获得 <strong>{result.earnedMagicPower + storyRewardMagicPower}</strong>{' '}
+              魔力值
+            </>
           )}
         </span>
       </motion.div>
@@ -147,11 +164,21 @@ export const QuizResult: React.FC<QuizResultProps> = ({
       >
         {!isPassed && (
           <Button variant="secondary" onClick={onRetry} disabled={isSaving}>
-            🔄 再试一次
+            <EmojiIllustration>{'🔄'}</EmojiIllustration> 再试一次
           </Button>
         )}
         <Button variant="primary" onClick={onFinish} disabled={isSaving}>
-          {isSaving ? '正在保存…' : isPassed ? '🎯 完成' : '📖 返回学习'}
+          {isSaving ? (
+            '正在保存…'
+          ) : isPassed ? (
+            <>
+              <EmojiIllustration>🎯</EmojiIllustration> 完成
+            </>
+          ) : (
+            <>
+              <EmojiIllustration>📖</EmojiIllustration> 返回学习
+            </>
+          )}
         </Button>
       </motion.div>
       {saveError && (

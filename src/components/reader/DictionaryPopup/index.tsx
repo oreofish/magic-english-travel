@@ -1,3 +1,4 @@
+import { EmojiIllustration } from '@/components/common/EmojiIllustration';
 /**
  * DictionaryPopup 组件
  * 单词查询弹窗，显示释义、发音、例句
@@ -104,7 +105,9 @@ export const DictionaryPopup: React.FC<DictionaryPopupProps> = ({
           </div>
         ) : lookupError ? (
           <div className={styles.notFound} role="alert">
-            <span className={styles.notFoundEmoji}>⚠️</span>
+            <span className={styles.notFoundEmoji}>
+              <EmojiIllustration>{'⚠️'}</EmojiIllustration>
+            </span>
             <p className={styles.notFoundText}>{lookupError}</p>
             <button className={styles.retryBtn} onClick={() => void lookupWord()}>
               重试
@@ -138,7 +141,9 @@ export const DictionaryPopup: React.FC<DictionaryPopupProps> = ({
             {/* Emoji 图示 */}
             {entry.emoji && (
               <div className={styles.emojiSection}>
-                <span className={styles.emoji}>{entry.emoji}</span>
+                <span className={styles.emoji}>
+                  <EmojiIllustration>{entry.emoji}</EmojiIllustration>
+                </span>
               </div>
             )}
 
@@ -184,7 +189,9 @@ export const DictionaryPopup: React.FC<DictionaryPopupProps> = ({
           </>
         ) : (
           <div className={styles.notFound}>
-            <span className={styles.notFoundEmoji}>🔍</span>
+            <span className={styles.notFoundEmoji}>
+              <EmojiIllustration>{'🔍'}</EmojiIllustration>
+            </span>
             <p className={styles.notFoundText}>
               未找到 "<strong>{word}</strong>" 的释义
             </p>

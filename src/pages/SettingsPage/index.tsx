@@ -256,6 +256,9 @@ const SettingsPage: React.FC = () => {
               >
                 词典开源许可
               </a>
+              <a href={`${import.meta.env.BASE_URL}images/quiz/ATTRIBUTION.txt`} target="_blank" rel="noreferrer">
+                插图：Twemoji · CC BY 4.0
+              </a>
               <button
                 type="button"
                 onClick={() =>

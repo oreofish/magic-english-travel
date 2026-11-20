@@ -1,3 +1,4 @@
+import { EmojiIllustration } from '@/components/common/EmojiIllustration';
 /**
  * WordBuilder 组件
  * 单词拼装题型 - 拖拽字母组成单词
@@ -6,7 +7,8 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import type { QuizItem } from '@/db';
-import { getQuizEmoji } from '../quizIllustrations';
+import { getQuizIllustrationFiles } from '../quizIllustrations';
+import { QuizIllustration } from '../QuizIllustration';
 import styles from './WordBuilder.module.css';
 
 interface WordBuilderProps {
@@ -114,13 +116,15 @@ export const WordBuilder: React.FC<WordBuilderProps> = ({
     <div className={styles.container}>
       {/* 题目区域 */}
       <div className={styles.questionSection}>
-        <h2 className={styles.title}>🧩 拼一拼</h2>
+        <h2 className={styles.title}>
+          <EmojiIllustration>{'🧩'}</EmojiIllustration> 拼一拼
+        </h2>
         <p className={styles.instruction}>{question.question}</p>
 
         {/* 图片提示 */}
-        {getQuizEmoji(question.audioQuestion) && (
+        {getQuizIllustrationFiles(question.audioQuestion) && (
           <div className={styles.imageHint}>
-            <span className={styles.hintEmoji}>{getQuizEmoji(question.audioQuestion)}</span>
+            <QuizIllustration image={question.audioQuestion} className={styles.hintEmoji} />
           </div>
         )}
       </div>
@@ -169,10 +173,11 @@ export const WordBuilder: React.FC<WordBuilderProps> = ({
           onClick={handleHint}
           disabled={hintUsed || hintRequestedRef.current || selectedLetters.length > 0}
         >
-          {hintUsed || hintRequestedRef.current ? '💡 已使用提示' : '💡 提示 (-5 MP)'}
+          <EmojiIllustration>💡</EmojiIllustration>
+          {hintUsed || hintRequestedRef.current ? '已使用提示' : '提示 (-5 MP)'}
         </button>
         <button className={styles.clearBtn} onClick={handleClear}>
-          🔄 重置
+          <EmojiIllustration>{'🔄'}</EmojiIllustration> 重置
         </button>
         <motion.button
           className={styles.submitBtn}

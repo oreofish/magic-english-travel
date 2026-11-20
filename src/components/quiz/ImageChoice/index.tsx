@@ -7,7 +7,8 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import type { QuizItem } from '@/db';
 import { ttsService } from '@/services/ttsService';
-import { getQuizEmoji } from '../quizIllustrations';
+import { Headphones, Lightbulb, Volume2 } from 'lucide-react';
+import { QuizIllustration } from '../QuizIllustration';
 import styles from './ImageChoice.module.css';
 
 interface ImageChoiceProps {
@@ -78,7 +79,7 @@ export const ImageChoice: React.FC<ImageChoiceProps> = ({
     if (hintUsed || hintUsedRef.current) return;
     hintUsedRef.current = true;
     onHint();
-    setHintMessage(`💡 要找的是 “${question.question}” 对应的图片。已使用提示（-5 魔力值）`);
+    setHintMessage(`要找的是 “${question.question}” 对应的图片。已使用提示（-5 魔力值）`);
     hintTimerRef.current = setTimeout(() => setHintMessage(null), 3000);
   }, [hintUsed, onHint, question.question]);
 
@@ -86,7 +87,9 @@ export const ImageChoice: React.FC<ImageChoiceProps> = ({
     <div className={styles.container}>
       {/* 题目区域 */}
       <div className={styles.questionSection}>
-        <h2 className={styles.title}>🎧 看一看，选一选</h2>
+        <h2 className={styles.title}>
+          <Headphones size={24} aria-hidden="true" /> 看一看，选一选
+        </h2>
         <p className={styles.instruction}>一起读题目，也可以点喇叭听题，再选答案</p>
         <p className={styles.questionWord} lang="en">
           {question.question}
@@ -98,7 +101,7 @@ export const ImageChoice: React.FC<ImageChoiceProps> = ({
           whileTap={{ scale: 0.95 }}
           disabled={isPlaying}
         >
-          <span className={styles.playIcon}>{isPlaying ? '🔊' : '🔈'}</span>
+          <Volume2 size={28} aria-hidden="true" />
           <span className={styles.playText}>{isPlaying ? '播放中...' : '听题目'}</span>
         </motion.button>
         {audioError && (
@@ -121,16 +124,10 @@ export const ImageChoice: React.FC<ImageChoiceProps> = ({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            {getQuizEmoji(option.image) ? (
-              <div className={styles.optionImage}>
-                <span className={styles.emoji} aria-hidden="true">
-                  {getQuizEmoji(option.image)}
-                </span>
-                <span className={styles.optionText}>{option.text || option.value}</span>
-              </div>
-            ) : (
-              <div className={styles.optionText}>{option.text || option.value}</div>
-            )}
+            <div className={styles.optionImage}>
+              <QuizIllustration image={option.image} className={styles.emoji} />
+              <span className={styles.optionText}>{option.text || option.value}</span>
+            </div>
           </motion.button>
         ))}
       </div>
@@ -152,7 +149,8 @@ export const ImageChoice: React.FC<ImageChoiceProps> = ({
           onClick={handleHint}
           disabled={hintUsed || hintUsedRef.current}
         >
-          {hintUsed || hintUsedRef.current ? '💡 已使用提示' : '💡 提示 (-5 MP)'}
+          <Lightbulb size={18} aria-hidden="true" />
+          {hintUsed || hintUsedRef.current ? '已使用提示' : '提示 (-5 MP)'}
         </button>
       </div>
     </div>

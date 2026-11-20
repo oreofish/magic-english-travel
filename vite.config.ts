@@ -21,7 +21,8 @@ export default defineConfig(() => {
           'apple-touch-icon.png',
           'animations/*.json',
           'sounds/*.mp3',
-          'images/**/*.webp'
+          'images/**/*.webp',
+          'images/quiz/ATTRIBUTION.txt'
         ],
         manifest: {
           name: 'Magic English Buddy',

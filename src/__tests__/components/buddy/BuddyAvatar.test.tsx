@@ -7,6 +7,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '../../utils/render';
+import assets from '@/data/emojiAssets.json';
 import { BuddyAvatar } from '@/components/buddy/BuddyAvatar';
 import type { BuddyStage, BuddyMood } from '@/services/buddyService';
 
@@ -20,21 +21,21 @@ describe('BuddyAvatar 组件', () => {
     it('应该显示 Buddy 的 emoji', () => {
       render(<BuddyAvatar {...defaultProps} stage={2} />);
       // Stage 2 的 emoji 是 🐣
-      expect(screen.getByText('🐣')).toBeInTheDocument();
+      expect(document.querySelector(`img[src$="${assets['🐣'][0]}"]`)).toBeInTheDocument();
     });
 
     it('不同阶段应该显示不同 emoji', () => {
       const { rerender } = render(<BuddyAvatar {...defaultProps} stage={1} />);
-      expect(screen.getByText('🥚')).toBeInTheDocument();
+      expect(document.querySelector(`img[src$="${assets['🥚'][0]}"]`)).toBeInTheDocument();
 
       rerender(<BuddyAvatar {...defaultProps} stage={2} />);
-      expect(screen.getByText('🐣')).toBeInTheDocument();
+      expect(document.querySelector(`img[src$="${assets['🐣'][0]}"]`)).toBeInTheDocument();
 
       rerender(<BuddyAvatar {...defaultProps} stage={3} />);
-      expect(screen.getByText('🐲')).toBeInTheDocument();
+      expect(document.querySelector(`img[src$="${assets['🐲'][0]}"]`)).toBeInTheDocument();
 
       rerender(<BuddyAvatar {...defaultProps} stage={4} />);
-      expect(screen.getByText('🌟')).toBeInTheDocument();
+      expect(document.querySelector(`img[src$="${assets['🌟'][0]}"]`)).toBeInTheDocument();
     });
   });
 
@@ -42,24 +43,24 @@ describe('BuddyAvatar 组件', () => {
     it('应该显示心情 emoji', () => {
       render(<BuddyAvatar {...defaultProps} mood="happy" />);
       // happy mood emoji 是 😊
-      expect(screen.getByText('😊')).toBeInTheDocument();
+      expect(document.querySelector(`img[src$="${assets['😊'][0]}"]`)).toBeInTheDocument();
     });
 
     it('不同心情应该显示不同 emoji', () => {
       const { rerender } = render(<BuddyAvatar {...defaultProps} mood="happy" />);
-      expect(screen.getByText('😊')).toBeInTheDocument();
+      expect(document.querySelector(`img[src$="${assets['😊'][0]}"]`)).toBeInTheDocument();
 
       rerender(<BuddyAvatar {...defaultProps} mood="excited" />);
-      expect(screen.getByText('🤩')).toBeInTheDocument();
+      expect(document.querySelector(`img[src$="${assets['🤩'][0]}"]`)).toBeInTheDocument();
 
       rerender(<BuddyAvatar {...defaultProps} mood="neutral" />);
-      expect(screen.getByText('😐')).toBeInTheDocument();
+      expect(document.querySelector(`img[src$="${assets['😐'][0]}"]`)).toBeInTheDocument();
 
       rerender(<BuddyAvatar {...defaultProps} mood="sad" />);
-      expect(screen.getByText('😢')).toBeInTheDocument();
+      expect(document.querySelector(`img[src$="${assets['😢'][0]}"]`)).toBeInTheDocument();
 
       rerender(<BuddyAvatar {...defaultProps} mood="sleepy" />);
-      expect(screen.getByText('😴')).toBeInTheDocument();
+      expect(document.querySelector(`img[src$="${assets['😴'][0]}"]`)).toBeInTheDocument();
     });
   });
 

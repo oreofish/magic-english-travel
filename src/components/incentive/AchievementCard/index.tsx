@@ -1,3 +1,4 @@
+import { EmojiIllustration } from '@/components/common/EmojiIllustration';
 /**
  * AchievementCard 组件
  * 成就卡片展示
@@ -37,7 +38,9 @@ export const AchievementCard = memo<AchievementCardProps>(
       <div className={`${styles.card} ${unlocked ? styles.unlocked : styles.locked}`}>
         {/* 图标 */}
         <div className={styles.iconWrapper}>
-          <span className={styles.icon}>{unlocked ? icon : '🔒'}</span>
+          <span className={styles.icon}>
+            <EmojiIllustration>{unlocked ? icon : '🔒'}</EmojiIllustration>
+          </span>
           {unlocked && <span className={styles.glow} aria-hidden="true" />}
         </div>
 
@@ -47,13 +50,19 @@ export const AchievementCard = memo<AchievementCardProps>(
           <p className={styles.description}>{description}</p>
           {!unlocked && <span className={styles.date}>尚未解锁</span>}
 
-          {unlocked && unlockedAt && <span className={styles.date}>🏅 {unlockedAt}</span>}
+          {unlocked && unlockedAt && (
+            <span className={styles.date}>
+              <EmojiIllustration>{'🏅'}</EmojiIllustration> {unlockedAt}
+            </span>
+          )}
         </div>
 
         {/* 奖励 */}
         {unlocked && rewardMagicPower && (
           <div className={styles.reward}>
-            <span className={styles.rewardIcon}>✨</span>
+            <span className={styles.rewardIcon}>
+              <EmojiIllustration>{'✨'}</EmojiIllustration>
+            </span>
             <span className={styles.rewardValue}>+{rewardMagicPower}</span>
           </div>
         )}

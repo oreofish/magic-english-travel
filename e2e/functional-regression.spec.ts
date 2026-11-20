@@ -1,6 +1,56 @@
 import { test, expect, type Page } from '@playwright/test';
 
 const root = '/magic-english-buddy';
+
+test('answer illustrations render without a system emoji font and work offline', async ({
+  page,
+  context,
+}) => {
+  await start(page);
+  await page.goto(`${root}/quiz/l1_001`);
+  await expect(page.getByRole('button', { name: 'Red', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Green', exact: true })).toHaveCSS('opacity', '1');
+  const images = page.locator('[data-quiz-illustration] img');
+  await expect(images).toHaveCount(3);
+  await expect
+    .poll(() =>
+      images.evaluateAll(elements =>
+        elements.every(
+          el => (el as HTMLImageElement).complete && (el as HTMLImageElement).naturalWidth > 0
+        )
+      )
+    )
+    .toBe(true);
+  await page.screenshot({ path: 'docs/ux-evidence/quiz-option-icons.png', scale: 'css' });
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Red', exact: true })).toBeVisible();
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Red', exact: true })).toBeVisible();
+  await expect
+    .poll(() =>
+      images.evaluateAll(
+        elements =>
+          elements.length === 3 && elements.every(el => (el as HTMLImageElement).naturalWidth > 0)
+      )
+    )
+    .toBe(true);
+  await page.getByRole('button', { name: 'Red', exact: true }).click();
+  await page.getByRole('button', { name: /继续/ }).click();
+  await expect(page.getByRole('button', { name: 'Rabbit', exact: true })).toBeVisible();
+  await expect
+    .poll(() =>
+      images.evaluateAll(
+        elements =>
+          elements.length === 3 && elements.every(el => (el as HTMLImageElement).naturalWidth > 0)
+      )
+    )
+    .toBe(true);
+});
+
 async function start(page: Page) {
   await page.goto(`${root}/`);
   await page.getByRole('button', { name: '直接开始，一起学英语' }).click();
@@ -29,9 +79,28 @@ async function records(page: Page, table: string) {
 async function finishAppleQuiz(page: Page) {
   for (const answer of ['Red', 'Rabbit', 'Happy']) {
     await page.getByRole('button', { name: new RegExp(`^${answer}$`) }).click();
+    const feedbackIcon = page.locator('[data-emoji-illustration] img[src$="/1f389.svg"]');
+    await expect(feedbackIcon).toHaveCount(1);
+    await expect
+      .poll(() => feedbackIcon.evaluate(el => (el as HTMLImageElement).naturalWidth))
+      .toBeGreaterThan(0);
+    if (answer === 'Red') {
+      await expect(page.getByRole('heading', { name: '太棒了！' })).toHaveCSS('opacity', '1');
+      await page.screenshot({ path: 'docs/ux-evidence/quiz-feedback-icons.png', scale: 'css' });
+    }
     await page.getByRole('button', { name: /继续/ }).click();
   }
   await expect(page.getByRole('heading', { name: '太厉害了！' })).toBeVisible();
+  const trophy = page.locator('[data-emoji-illustration] img[src$="/1f3c6.svg"]');
+  await expect(trophy).toHaveCount(1);
+  await expect
+    .poll(() => trophy.evaluate(el => (el as HTMLImageElement).naturalWidth))
+    .toBeGreaterThan(0);
+  await expect(page.getByRole('heading', { name: '太厉害了！' }).locator('..')).toHaveCSS(
+    'opacity',
+    '1'
+  );
+  await page.screenshot({ path: 'docs/ux-evidence/quiz-result-icons.png', scale: 'css' });
   await page.getByRole('button', { name: /完成/ }).click();
   await expect(page).toHaveURL(/\/map$/);
 }
@@ -51,6 +120,7 @@ test('deep links respect missing profiles and locked lessons', async ({ page }) 
 test('first pass grants cards and achievements; replay preserves history without extra rewards', async ({
   page,
 }) => {
+  test.setTimeout(120_000);
   await start(page);
   await page.getByRole('button', { name: '开始第一个故事' }).click();
   await page.getByRole('button', { name: /读完了，去练一练/ }).click();
@@ -66,7 +136,31 @@ test('first pass grants cards and achievements; replay preserves history without
   expect((await records(page, 'userProgress'))[0].magicPower).toBe(firstPower);
   expect(await records(page, 'quizHistory')).toHaveLength(2);
   await page.goto(`${root}/scroll`);
+  await page.getByRole('button', { name: /卡牌/ }).click();
+  const cards = page.getByRole('button', { name: /点按查看意思/ });
+  await expect.poll(() => cards.count()).toBeGreaterThan(0);
+  await expect
+    .poll(() =>
+      cards
+        .locator('img')
+        .evaluateAll(
+          elements =>
+            elements.length > 0 && elements.every(el => (el as HTMLImageElement).naturalWidth > 0)
+        )
+    )
+    .toBe(true);
+  await expect(cards.first().locator('..')).toHaveCSS('opacity', '1');
+  await page.screenshot({ path: 'docs/ux-evidence/card-icons.png', scale: 'css' });
   await page.getByRole('button', { name: /成就/ }).click();
+  const achievementIcons = page.locator('[data-emoji-illustration] img');
+  await expect
+    .poll(() =>
+      achievementIcons.evaluateAll(
+        elements =>
+          elements.length > 0 && elements.every(el => (el as HTMLImageElement).naturalWidth > 0)
+      )
+    )
+    .toBe(true);
   await page.getByRole('button', { name: '领取 10 魔力值', exact: true }).click();
   const claimedPower = (await records(page, 'userProgress'))[0].magicPower;
   expect(claimedPower).toBeGreaterThan(firstPower);
@@ -94,7 +188,10 @@ test('legacy image questions display useful illustrations instead of missing fil
         cursor.onsuccess = () => {
           const item = cursor.result;
           if (!item) return;
-          item.update({ ...item.value, unlockedNodes: [...item.value.unlockedNodes, lookup.result.id] });
+          item.update({
+            ...item.value,
+            unlockedNodes: [...item.value.unlockedNodes, lookup.result.id],
+          });
           item.continue();
         };
       };
@@ -106,6 +203,16 @@ test('legacy image questions display useful illustrations instead of missing fil
   await page.goto(`${root}/quiz/l2_001`);
   await expect(page.getByRole('button', { name: 'sings', exact: true })).toBeVisible();
   await expect(page.locator('body')).not.toContainText('/assets/quiz/');
+  const illustrations = page.locator('[data-quiz-illustration] img');
+  await expect(illustrations).toHaveCount(6);
+  await expect
+    .poll(() =>
+      illustrations.evaluateAll(elements =>
+        elements.every(el => (el as HTMLImageElement).naturalWidth > 0)
+      )
+    )
+    .toBe(true);
+
   await page.getByRole('button', { name: 'sings', exact: true }).click();
   await page.getByRole('button', { name: /继续/ }).click();
   await page.getByRole('button', { name: /beautiful/ }).click();

@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { EmojiIllustration } from '@/components/common/EmojiIllustration';
 import { Check, Crown, LockKeyhole } from 'lucide-react';
 import type { UnifiedMapNode } from '@/data/unifiedMap';
 import EchoValleyScenery from './EchoValleyScenery';
@@ -230,7 +231,7 @@ export default function DesktopMap({
                   style={{ '--island': entry.sky } as CSSProperties}
                 >
                   <span className={styles.worldIcon} aria-hidden="true">
-                    {entry.icon}
+                    <EmojiIllustration>{entry.icon}</EmojiIllustration>
                   </span>
                   <strong>{entry.name}</strong>
                   <small>

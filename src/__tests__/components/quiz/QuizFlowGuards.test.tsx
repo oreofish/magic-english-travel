@@ -32,9 +32,10 @@ describe('练习流程保护', () => {
       />
     );
 
-    const options = screen
-      .getAllByRole('button')
-      .filter(button => button.textContent?.includes('🍎') || button.textContent?.includes('🍌'));
+    const options = [
+      screen.getByRole('button', { name: 'apple', exact: true }),
+      screen.getByRole('button', { name: 'banana', exact: true }),
+    ];
     fireEvent.click(options[0]);
     fireEvent.click(options[1]);
     await act(async () => {
@@ -90,9 +91,10 @@ describe('练习流程保护', () => {
     fireEvent.click(screen.getByRole('button', { name: /已使用提示/ }));
     expect(onHint).toHaveBeenCalledTimes(1);
 
-    const options = screen
-      .getAllByRole('button')
-      .filter(button => button.textContent?.includes('🍎') || button.textContent?.includes('🍌'));
+    const options = [
+      screen.getByRole('button', { name: 'apple', exact: true }),
+      screen.getByRole('button', { name: 'banana', exact: true }),
+    ];
     fireEvent.click(options[0]);
     fireEvent.click(options[1]);
     await act(async () => {

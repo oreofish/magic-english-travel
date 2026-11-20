@@ -1,3 +1,4 @@
+import { EmojiIllustration } from '@/components/common/EmojiIllustration';
 /**
  * FillBlank 组件
  * 填空题型 - 选择正确的单词填入空白处
@@ -82,7 +83,9 @@ export const FillBlank: React.FC<FillBlankProps> = ({ question, onAnswer, isAnsw
     <div className={styles.container}>
       {/* 题目文本 */}
       <div className={styles.questionSection}>
-        <div className={styles.questionIcon}>📝</div>
+        <div className={styles.questionIcon}>
+          <EmojiIllustration>{'📝'}</EmojiIllustration>
+        </div>
         {renderQuestion()}
       </div>
 
