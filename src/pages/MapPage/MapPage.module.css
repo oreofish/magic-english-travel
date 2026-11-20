@@ -233,12 +233,17 @@
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: #c5a8da transparent;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   background: var(--world-sky);
   mask-image: linear-gradient(transparent 105px, #000 160px);
   scroll-padding-top: calc(170px + env(safe-area-inset-top));
   scroll-padding-bottom: calc(120px + env(safe-area-inset-bottom));
+}
+.viewport::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 .terrain {
   position: relative;
@@ -674,6 +679,98 @@
   .worldTitle p {
     display: block;
     font-size: 13px;
+  }
+}
+@media (min-width: 900px) {
+  .terrain {
+    width: min(calc(100% - 160px), 1120px);
+  }
+  .cloudWorld::before {
+    background-size: auto 100%;
+    mask-image: linear-gradient(
+      to right,
+      transparent calc(50% - 33.333dvh),
+      #000 calc(50% - 25dvh),
+      #000 calc(50% + 25dvh),
+      transparent calc(50% + 33.333dvh)
+    );
+  }
+  .cloudWorld::after {
+    content: '';
+    position: absolute;
+    z-index: -2;
+    inset: -32px;
+    background: url('/images/maps/cloud-palace.webp') center / cover no-repeat;
+    filter: blur(24px);
+    opacity: 0.65;
+  }
+  .hud {
+    grid-template-columns: 64px 64px;
+    grid-template-rows: 64px 64px;
+    padding: calc(28px + env(safe-area-inset-top)) 32px 0;
+    gap: 20px;
+  }
+  .worldButton,
+  .settings {
+    min-height: 56px;
+    font-size: 12px;
+  }
+  .avatar {
+    width: 58px;
+    height: 58px;
+  }
+  .avatarLevel {
+    font-size: 12px;
+  }
+  .score {
+    min-height: 64px;
+  }
+  .score strong {
+    font-size: 22px;
+  }
+  .worldTitle h1 {
+    font-size: 32px;
+  }
+  .worldTitle .eyebrow {
+    font-size: 10px;
+    letter-spacing: 2px;
+  }
+  .node {
+    width: 176px;
+  }
+  .disc {
+    width: 78px;
+    height: 66px;
+  }
+  .nodeLabel {
+    max-width: 176px;
+  }
+  .nodeLabel strong {
+    font-size: 14px;
+  }
+  .character {
+    bottom: 124px;
+  }
+  .worldDisc {
+    width: 94px;
+    height: 78px;
+  }
+  .worldNode .nodeLabel {
+    min-width: 150px;
+  }
+  .nodeLabel > span,
+  .nodeLabel small {
+    font-size: 11px;
+  }
+  .locate {
+    right: 32px;
+    bottom: 32px;
+    width: 50px;
+    height: 50px;
+  }
+  .quest {
+    bottom: 28px;
+    width: 480px;
   }
 }
 @media (max-width: 350px) {

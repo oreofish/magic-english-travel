@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import { Check, Crown, LockKeyhole } from 'lucide-react';
 import type { UnifiedMapNode } from '@/data/unifiedMap';
 import EchoValleyScenery from './EchoValleyScenery';
+import ForestJourney from './ForestJourney';
 import styles from './DesktopMap.module.css';
 
 interface DesktopWorld {
@@ -12,6 +13,8 @@ interface DesktopWorld {
 }
 
 interface Props {
+  profileId?: string;
+  magicPower?: number;
   overview: boolean;
   region: number;
   worlds: DesktopWorld[];
@@ -21,53 +24,6 @@ interface Props {
   onOpenRegion: (level: number) => void;
   onSelectNode: (node: UnifiedMapNode) => void;
 }
-
-// Percent coordinates measured along the road painted into desktop-sprout-forest.webp.
-const forestRoad: [number, number][] = [
-  [5, 69.4],
-  [9.7, 65.8],
-  [14.4, 60.4],
-  [19.1, 55.7],
-  [23.8, 54.8],
-  [28.5, 56.8],
-  [33.2, 60.3],
-  [37.9, 62.5],
-  [42.6, 61.4],
-  [47.3, 57.7],
-  [52, 49.9],
-  [56.7, 43.4],
-  [61.4, 40.1],
-  [66.1, 40.7],
-  [70.8, 43.1],
-  [75.5, 43.6],
-  [80.2, 42.2],
-  [84.9, 38.7],
-  [89.6, 30.1],
-  [94.3, 24.6],
-];
-
-const forestLandmarks: Record<string, string> = {
-  l1_001: '苹果树',
-  l1_002: '猫咪小径',
-  l1_003: '七彩花圃',
-  l1_004: '林间小屋',
-  l1_005: '晨光坡',
-  l1_006: '数字石滩',
-  l1_007: '小狗草地',
-  l1_008: '森林公园',
-  l1_009: '玩具树桩',
-  l1_010: '月光小径',
-  l1_b01: '调色花田',
-  l1_b02: '动物足迹',
-  l1_b03: '骰子石阵',
-  l1_b04: '家庭野餐地',
-  l1_b05: '单词拼图台',
-  l1_c01: '速读树屋',
-  l1_c02: '记忆石阵',
-  l1_c03: '蜜蜂花园',
-  l1_c04: '鸟鸣林',
-  l1_boss: '守护树',
-};
 
 // From the foreground rapids to the distant gorge, with the third stop on the bridge.
 const valleyCreek: [number, number][] = [
@@ -108,12 +64,6 @@ interface IllustratedMap {
 }
 
 const illustratedMaps: Partial<Record<number, IllustratedMap>> = {
-  1: {
-    image: 'desktop-sprout-forest.webp',
-    coordinates: forestRoad,
-    landmarks: forestLandmarks,
-    direction: '沿步道从左向右前进',
-  },
   2: {
     image: 'desktop-echo-valley.webp',
     imageSources: [
@@ -145,6 +95,8 @@ function position(x: number, y: number): CSSProperties {
 }
 
 export default function DesktopMap({
+  profileId,
+  magicPower,
   overview,
   region,
   worlds,
@@ -154,6 +106,18 @@ export default function DesktopMap({
   onOpenRegion,
   onSelectNode,
 }: Props) {
+  if (!overview && region === 1) {
+    return (
+      <ForestJourney
+        key={profileId}
+        profileId={profileId}
+        magicPower={magicPower}
+        nodes={regionNodes}
+        activeNode={activeNode}
+        onSelectNode={onSelectNode}
+      />
+    );
+  }
   const scene = overview ? undefined : illustratedMaps[region];
   const world = worlds[region - 1]!;
   const storyStops = regionNodes.map((node, index) => {

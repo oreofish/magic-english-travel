@@ -41,12 +41,12 @@ import styles from './MapPage.module.css';
 const mapData = generateUnifiedMapData();
 const worlds = [
   {
-    name: '云端梦幻宫殿',
-    english: 'PALACE IN THE CLOUDS',
-    icon: '🏰',
-    color: '#cf8bc9',
-    sky: '#ece1fa',
-    description: '沿着云朵小径，和小动物一起寻找故事里的魔法。',
+    name: '萌芽之森',
+    english: 'SPROUT FOREST',
+    icon: '🌳',
+    color: '#7caa79',
+    sky: '#e5efda',
+    description: '沿着溪边小路，收集故事皇冠。',
   },
   {
     name: '回声山谷',
@@ -186,19 +186,7 @@ export default function MapPage() {
     void load();
   }, [load]);
   const activeNode = findActiveNode(nodes);
-  const visibleWorlds = desktop
-    ? [
-        {
-          ...worlds[0]!,
-          name: '萌芽之森',
-          english: 'SPROUT FOREST',
-          icon: '🌳',
-          description: '沿着溪边小路，收集故事皇冠。',
-        },
-        ...worlds.slice(1),
-      ]
-    : worlds;
-  const world = visibleWorlds[region - 1]!;
+  const world = worlds[region - 1]!;
   const regionNodes = nodes.filter(n => n.level === region);
   const completed = regionNodes.filter(n => n.completed).length;
   const selectedStory = selected?.storyId ? getStoryById(selected.storyId) : null;
@@ -217,7 +205,11 @@ export default function MapPage() {
     if (el) el.scrollTop = mapHeight - 180 - focusIndex * STEP - el.clientHeight + 190;
   }, [mapHeight, focusIndex]);
   useEffect(() => {
-    if (!loading) locate();
+    if (loading || !viewport.current) return;
+    locate();
+    const observer = new ResizeObserver(locate);
+    observer.observe(viewport.current);
+    return () => observer.disconnect();
   }, [loading, region, overview, desktop, locate]);
   useEffect(() => {
     const update = () => setOffline(!navigator.onLine);
@@ -248,7 +240,7 @@ export default function MapPage() {
   };
   return (
     <div
-      className={`${styles.game} ${desktop ? styles.desktop : !overview && region === 1 ? styles.cloudWorld : ''}`}
+      className={`${styles.game} ${desktop ? styles.desktop : !overview && region === 4 ? styles.cloudWorld : ''}`}
       style={{ '--world-color': world.color, '--world-sky': world.sky } as CSSProperties}
       data-desktop-valley={desktop && !overview && region === 2 ? true : undefined}
       data-testid="map-page"
@@ -289,7 +281,7 @@ export default function MapPage() {
           {overview
             ? desktop
               ? '选择一个世界，沿道路探索故事。'
-              : '从云端出发，把每个世界都变成你的故事。'
+              : '从森林出发，把每个世界都变成你的故事。'
             : world.description}
         </p>
         {!overview && (
@@ -326,9 +318,11 @@ export default function MapPage() {
         <>
           {desktop ? (
             <DesktopMap
+              profileId={user?.id}
+              magicPower={progress?.magicPower}
               overview={overview}
               region={region}
-              worlds={visibleWorlds}
+              worlds={worlds}
               nodes={nodes}
               regionNodes={regionNodes}
               activeNode={activeNode}
@@ -346,7 +340,7 @@ export default function MapPage() {
               }
             >
               <div
-                className={`${styles.terrain} ${!overview && region === 1 ? styles.palace : styles.simpleTerrain}`}
+                className={`${styles.terrain} ${!overview && region === 4 ? styles.palace : styles.simpleTerrain}`}
                 style={{ height: mapHeight }}
               >
                 <div className={styles.destination}>
