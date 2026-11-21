@@ -5,17 +5,24 @@ const root = '/magic-english-buddy/';
 test('shimmering sea uses underwater bubble stops and preserves locked previews', async ({
   page,
 }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.setViewportSize({ width: 1440, height: 900 });
   await start(page);
   await page.getByRole('button', { name: '查看总地图' }).click();
   await page.getByRole('button', { name: 'LEVEL 3 闪耀之海，未解锁，可预览' }).click();
   const art = page.locator('#adventure-map img');
-  await expect(art).toHaveAttribute('src', /desktop-shimmering-sea\.webp$/);
+  await expect(art).toHaveAttribute('src', /desktop-shimmering-sea-clean\.webp$/);
   await expect
     .poll(() => art.evaluate(el => (el as HTMLImageElement).naturalWidth))
     .toBeGreaterThan(0);
   const stops = page.getByRole('list', { name: '故事关卡' }).getByRole('button');
   await expect(stops).toHaveCount(15);
+  await expect(stops.first()).toHaveCSS('border-top-width', '0px');
+  const bubblePath = page.getByTestId('ocean-bubble-path');
+  await expect(bubblePath).toBeVisible();
+  await expect(bubblePath.locator('span')).toHaveCount(56);
+  await expect(bubblePath.locator('span').first()).toHaveCSS('background-image', /radial-gradient/);
+  await expect(page.locator('#adventure-map polyline')).toHaveCount(0);
   for (const stop of await stops.all()) {
     await expect(stop).toBeInViewport();
     const bounds = await stop.boundingBox();
@@ -30,7 +37,7 @@ test('shimmering sea uses underwater bubble stops and preserves locked previews'
   await expect(page.getByRole('heading', { name: '闪耀之海', exact: true })).toBeVisible();
   await expect(page.locator('#adventure-map img')).toHaveCount(0);
   await page.setViewportSize({ width: 1440, height: 900 });
-  await expect(art).toHaveAttribute('src', /desktop-shimmering-sea\.webp$/);
+  await expect(art).toHaveAttribute('src', /desktop-shimmering-sea-clean\.webp$/);
 });
 
 async function start(page: import('@playwright/test').Page) {

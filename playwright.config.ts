@@ -7,6 +7,7 @@ export default defineConfig({
   ...functional,
   testMatch: [
     'game-map.spec.ts',
+    'ocean-3d.spec.ts',
     'functional-regression.spec.ts',
     'ux-mobile.spec.ts',
     'offline-audio.spec.ts',
@@ -25,6 +26,7 @@ export default defineConfig({
           ]
         : [
             'game-map.spec.ts',
+            'ocean-3d.spec.ts',
             'functional-regression.spec.ts',
             'ux-mobile.spec.ts',
             'offline-audio.spec.ts',

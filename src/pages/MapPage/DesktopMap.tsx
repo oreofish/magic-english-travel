@@ -4,6 +4,8 @@ import { Check, Crown, LockKeyhole } from 'lucide-react';
 import type { UnifiedMapNode } from '@/data/unifiedMap';
 import EchoValleyScenery from './EchoValleyScenery';
 import ForestJourney from './ForestJourney';
+import OceanScene from './OceanScene';
+import { oceanStops } from './oceanLayout';
 import styles from './DesktopMap.module.css';
 
 interface DesktopWorld {
@@ -66,24 +68,8 @@ interface IllustratedMap {
 
 const illustratedMaps: Partial<Record<number, IllustratedMap>> = {
   3: {
-    image: 'desktop-shimmering-sea.webp',
-    coordinates: [
-      [7.3, 75],
-      [13, 71],
-      [19, 66],
-      [25, 63],
-      [31, 65],
-      [37, 68],
-      [43, 68],
-      [49, 64],
-      [55, 56],
-      [62, 51],
-      [68, 52.5],
-      [74, 55],
-      [80, 54],
-      [87, 48],
-      [94, 42],
-    ],
+    image: 'desktop-shimmering-sea-clean.webp',
+    coordinates: oceanStops,
     landmarks: {},
     direction: '沿海底气泡小路前进',
   },
@@ -189,21 +175,31 @@ export default function DesktopMap({
         </svg>
       )}
       {!overview && region === 2 && <EchoValleyScenery />}
+      {!overview && region === 3 && <OceanScene />}
       {!overview && region === 3 && (
-        <div className={styles.seaBubbles} aria-hidden="true">
-          {[12, 29, 53, 76, 91].map((left, index) => (
-            <i
-              key={left}
-              style={{
-                left: `${left}%`,
-                top: `${82 - index * 6}%`,
-                animationDelay: `${-index * 2}s`,
-              }}
-            />
-          ))}
+        <div className={styles.bubblePath} aria-hidden="true" data-testid="ocean-bubble-path">
+          {oceanStops.slice(1).flatMap(([x, y], index) => {
+            const [previousX, previousY] = oceanStops[index]!;
+            return Array.from({ length: 4 }, (_, step) => {
+              const fraction = (step + 1) / 5;
+              return (
+                <span
+                  key={`${index}-${step}`}
+                  style={{
+                    ...position(
+                      previousX + (x - previousX) * fraction,
+                      previousY + (y - previousY) * fraction
+                    ),
+                    width: step % 2 ? 12 : 8,
+                    height: step % 2 ? 12 : 8,
+                  }}
+                />
+              );
+            });
+          })}
         </div>
       )}
-      {!overview && (
+      {!overview && region !== 3 && (
         <svg
           className={styles.road}
           viewBox="0 0 100 100"
@@ -251,6 +247,7 @@ export default function DesktopMap({
               <li
                 className={`${styles.stop} ${styles.storyStop}`}
                 style={position(left, top)}
+                data-ocean-stop={region === 3 ? index : undefined}
                 key={node.id}
               >
                 <button
@@ -263,14 +260,29 @@ export default function DesktopMap({
                   aria-label={`${node.titleCn}，${node.completed ? '已完成，可重温' : node.unlocked ? '可以开始' : '未解锁，查看条件'}`}
                   onClick={() => onSelectNode(node)}
                 >
-                  <span className={styles.dot} aria-hidden="true">
-                    {node.completed && <Check size={14} strokeWidth={3} />}
-                  </span>
-                  {!node.completed && (
-                    <span className={styles.balloon} aria-hidden="true">
-                      {region === 3 && !node.isLevelEnd ? index + 1 : <Crown size={17} />}
+                  {region === 3 ? (
+                    <>
+                      {node.completed ? (
+                        <Check size={18} />
+                      ) : node.isLevelEnd ? (
+                        <Crown size={19} />
+                      ) : (
+                        index + 1
+                      )}
                       {!node.unlocked && <LockKeyhole size={10} className={styles.lock} />}
-                    </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className={styles.dot} aria-hidden="true">
+                        {node.completed && <Check size={14} strokeWidth={3} />}
+                      </span>
+                      {!node.completed && (
+                        <span className={styles.balloon} aria-hidden="true">
+                          {region === 3 && !node.isLevelEnd ? index + 1 : <Crown size={17} />}
+                          {!node.unlocked && <LockKeyhole size={10} className={styles.lock} />}
+                        </span>
+                      )}
+                    </>
                   )}
                   <span className={styles.pinLabel} aria-hidden="true">
                     <strong>
