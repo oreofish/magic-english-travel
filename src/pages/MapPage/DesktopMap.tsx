@@ -67,6 +67,51 @@ interface IllustratedMap {
 }
 
 const illustratedMaps: Partial<Record<number, IllustratedMap>> = {
+  7: {
+    image: 'desktop-genesis-core.webp',
+    coordinates: [
+      [11, 84.5],
+      [25, 74.5],
+      [42, 76.3],
+      [61, 78],
+      [78, 72],
+      [82.7, 64.2],
+      [71.5, 58.7],
+      [59.7, 53.8],
+    ],
+    routeBendsAfterStop: {
+      0: [
+        [17.5, 78.5],
+        [21, 75.7],
+      ],
+      1: [[32, 74.4]],
+      2: [[51, 77.7]],
+      3: [
+        [69, 76.5],
+        [74, 74.6],
+      ],
+      4: [[81.2, 68.8]],
+      5: [
+        [80.3, 61.7],
+        [77, 60.2],
+      ],
+      6: [
+        [65, 57],
+        [61, 55.9],
+      ],
+    },
+    landmarks: {
+      l7_001: '星港入口',
+      l7_002: '信息中枢',
+      l7_003: '全息街区',
+      l7_004: '未来环线',
+      l7_005: '连接之桥',
+      l7_006: '神经网络站',
+      l7_c01: '核心接入站',
+      l7_boss: '超级大脑核心',
+    },
+    direction: '沿高架星光轨道前往超级大脑核心',
+  },
   3: {
     image: 'desktop-shimmering-sea-clean.webp',
     coordinates: oceanStops,
@@ -141,11 +186,18 @@ export default function DesktopMap({
     .map(point => point.join(','))
     .join(' ');
   const route = Array.from({ length: 101 }, (_, x) => `${x},${roadY(x)}`).join(' ');
+  const theme = overview
+    ? styles.atlas
+    : region === 3
+      ? styles.sea
+      : region === 7
+        ? styles.coreCity
+        : '';
   return (
     <div
       id="adventure-map"
       tabIndex={0}
-      className={`${styles.map} ${overview ? styles.atlas : !overview && region === 3 ? styles.sea : ''}`}
+      className={`${styles.map} ${theme}`}
       style={{ '--terrain': world.sky, '--terrain-shade': world.color } as CSSProperties}
       aria-label={
         overview
@@ -207,6 +259,13 @@ export default function DesktopMap({
           aria-hidden="true"
         >
           <polyline points={storyRoute} className={styles.storyRoute} />
+          {region === 7 && (
+            <polyline
+              points={storyRoute}
+              className={styles.cityTraffic}
+              data-testid="genesis-traffic"
+            />
+          )}
         </svg>
       )}
       {overview ? (
@@ -260,7 +319,7 @@ export default function DesktopMap({
                   aria-label={`${node.titleCn}，${node.completed ? '已完成，可重温' : node.unlocked ? '可以开始' : '未解锁，查看条件'}`}
                   onClick={() => onSelectNode(node)}
                 >
-                  {region === 3 ? (
+                  {region === 3 || region === 7 ? (
                     <>
                       {node.completed ? (
                         <Check size={18} />
@@ -278,7 +337,7 @@ export default function DesktopMap({
                       </span>
                       {!node.completed && (
                         <span className={styles.balloon} aria-hidden="true">
-                          {region === 3 && !node.isLevelEnd ? index + 1 : <Crown size={17} />}
+                          <Crown size={17} />
                           {!node.unlocked && <LockKeyhole size={10} className={styles.lock} />}
                         </span>
                       )}

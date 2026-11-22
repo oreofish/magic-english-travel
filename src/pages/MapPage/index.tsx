@@ -90,11 +90,11 @@ const worlds = [
   },
   {
     name: '创世之核',
-    english: 'CRYSTAL HEART',
+    english: 'GENESIS CORE',
     icon: '💎',
     color: '#75a7ad',
     sky: '#def1ee',
-    description: '带上所有的魔法，开启最后的奇妙旅程。',
+    description: '沿着星光轨道，探索超级大脑的未来城市。',
   },
 ];
 const typeLabels: Record<string, string> = {

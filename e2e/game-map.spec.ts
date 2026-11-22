@@ -2,6 +2,48 @@ import { test, expect } from '@playwright/test';
 
 const root = '/magic-english-buddy/';
 
+test('genesis core follows the future city route and preserves locked previews', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await start(page);
+  await page.getByRole('button', { name: '查看总地图' }).click();
+  await page.getByRole('button', { name: 'LEVEL 7 创世之核，未解锁，可预览' }).click();
+  await expect(page.getByRole('heading', { name: '创世之核', exact: true })).toBeVisible();
+  await expect(page.getByText('LEVEL 7 · GENESIS CORE', { exact: true })).toBeVisible();
+  const map = page.locator('#adventure-map');
+  const art = map.locator('img');
+  await expect(art).toHaveAttribute('src', /desktop-genesis-core\.webp$/);
+  await expect.poll(() => art.evaluate(el => (el as HTMLImageElement).naturalWidth)).toBe(1672);
+  const stops = page.getByRole('list', { name: '故事关卡' }).getByRole('button');
+  await expect(stops).toHaveCount(8);
+  for (const stop of await stops.all()) await expect(stop).toBeInViewport();
+  const traffic = page.getByTestId('genesis-traffic');
+  await expect(traffic).toBeVisible();
+  const offset = await traffic.evaluate(el => getComputedStyle(el).strokeDashoffset);
+  await expect
+    .poll(() => traffic.evaluate(el => getComputedStyle(el).strokeDashoffset))
+    .not.toBe(offset);
+  await page.screenshot({ path: 'docs/ux-evidence/genesis-core-desktop.png', scale: 'css' });
+
+  const boss = page.getByTestId('map-node-l7_boss');
+  const bounds = await boss.boundingBox();
+  expect(bounds!.x).toBeGreaterThan(1440 * 0.55);
+  expect(bounds!.x).toBeLessThan(1440 * 0.65);
+  await boss.hover();
+  await expect(page.getByText('超级大脑核心', { exact: true })).toBeVisible();
+  await page.getByTestId('map-node-l7_001').click();
+  await expect(page.getByRole('dialog')).toContainText('先完成');
+  await page.getByRole('button', { name: '关闭', exact: true }).click();
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(traffic).toBeHidden();
+  await page.setViewportSize({ width: 1100, height: 740 });
+  for (const stop of await stops.all()) await expect(stop).toBeInViewport();
+  await page.setViewportSize({ width: 360, height: 780 });
+  await expect(page.getByRole('heading', { name: '创世之核', exact: true })).toBeVisible();
+  await expect(map.locator('img')).toHaveCount(0);
+});
+
 test('shimmering sea uses underwater bubble stops and preserves locked previews', async ({
   page,
 }) => {

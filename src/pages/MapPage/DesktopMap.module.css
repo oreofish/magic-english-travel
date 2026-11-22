@@ -397,3 +397,84 @@
 .sea[data-ocean-rendered='true'] .bubblePath {
   display: none;
 }
+
+.coreCity {
+  background: #071329;
+}
+
+.coreCity .storyRoute {
+  stroke: #91efffcc;
+  stroke-width: 2px;
+  filter: drop-shadow(0 0 4px #36bcff);
+}
+
+.coreCity .pin,
+.coreCity .pin[data-completed='true'] {
+  --diameter: 44px;
+  display: grid;
+  place-items: center;
+  top: 0;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  border: 1px solid #b4e7ffc7;
+  border-radius: 11px;
+  background: linear-gradient(145deg, #3b5265f2, #06192af2);
+  box-shadow:
+    inset 1px 1px 0 #e0f5ff47,
+    0 0 12px #65d9ff59,
+    0 4px 0 #020a19b3;
+  color: #ecfbff;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.coreCity .pin[data-unlocked='true'] {
+  border-color: #b9fbff;
+  background: linear-gradient(145deg, #1a6e85, #0a304c);
+}
+
+.coreCity .pin[aria-current='step'] {
+  outline: 3px solid #77edff80;
+  outline-offset: 4px;
+}
+
+.coreCity .pin[data-completed='true'] {
+  color: #abffe0;
+  border-color: #abffe0;
+}
+
+.coreCity .pinLabel {
+  background: #081b30f5;
+  border: 1px solid #71dfff70;
+}
+
+.coreCity .pinLabel small {
+  color: #a7e7f6;
+}
+
+.coreCity .lock {
+  background: #0b243b;
+  border-color: #9be5f2;
+}
+
+.cityTraffic {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cityTraffic {
+    display: block;
+    stroke: #fff5bc;
+    stroke-width: 3px;
+    stroke-dasharray: 3px 160px;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 3px #fff4ac);
+    animation: city-traffic 12s linear infinite;
+  }
+}
+
+@keyframes city-traffic {
+  to {
+    stroke-dashoffset: -326px;
+  }
+}
